@@ -1,14 +1,21 @@
-# Flutter-First Delivery
+# Delivery Status
 
-1. Audit widget/backend contracts and agree native launch authentication.
-2. Define mobile callbacks, app links, cancellation and supported capabilities.
-3. Add typed parsers and sanitized shared fixtures, including unknown versions.
-4. Implement transport, revision control, expiry and recovery.
-5. Deliver one backend-driven native form and real evidence-upload vertical slice.
-6. Validate provider-supported capture/liveness on Android and iOS.
-7. Add remaining steps and hosted-web presentation.
-8. Test permissions, offline behavior, background/resume, app links and expiry.
-9. Mirror validated behavior in React Native.
-10. Verify device builds, privacy disclosures, license and package distribution.
+Implemented locally:
+- Native backend launch/exchange channel, resume and browser/native separation.
+- Typed backend parsers and revision-safe session orchestration.
+- Native HTTP and multipart transport, expiry/cancellation/recovery primitives.
+- Native scalar forms, consent, basic camera and document selection.
+- Hosted browser launch and explicit app-return validation.
+- Single-call publishable-key native/hosted launcher and Android/iOS example.
+- Custom branded mobile controls with bundled Geist and Lucide outline icons.
 
-This scaffold is intentionally not publishable or an end-to-end SDK.
+Before production release:
+- Deploy the accompanying backend changes and exercise merchant authorization.
+- Integrate provider-supported native liveness and actual OTP delivery.
+- Test physical-device capture, denied permissions, interruption and recovery.
+- Configure and test each merchant app's OS-verified app/universal links.
+- Validate privacy disclosures, license and device/version compatibility matrix.
+- Mirror the proven contracts/behavior in React Native; it remains a scaffold.
+
+Current execution is test-only. There is no public package release or claim of
+production identity verification readiness.

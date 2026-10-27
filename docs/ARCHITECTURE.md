@@ -10,10 +10,11 @@ Do not use global mutable state for an active customer's session.
 
 ## Backend Gate
 
-Existing browser launch and token guards are origin-bound. Native authentication
-is NOT provided by this scaffold. Agree a mobile launch/exchange contract before
-integrating HTTP. Never spoof Origin, relax browser security, embed merchant
-secrets or invent a publishable-key mobile authorization scheme.
+Browser launch/token guards remain origin-bound. The accompanying backend change
+adds publishable-key mobile creation and a separate native access channel with
+short-lived, one-use tickets. Optional merchant-server grants remain supported.
+Deploy that change before using the implemented native HTTP adapter.
+Never spoof Origin, relax browser guards or embed merchant keys in an app.
 
 Retain backend required fields, capabilities, actions, revisions and role
 requirements. Unsupported versions must fail explicitly. The merchant backend
@@ -22,7 +23,8 @@ and signed results remain authoritative; app callbacks report session state only
 ## Security and Lifecycle
 
 - Memory-only tokens by default, with no sensitive telemetry.
-- App-private temporary evidence storage; deterministic cleanup.
+- Temporary evidence lifetime must be controlled; upload buffers are cleared by
+  the built-in screen and camera cache cleanup is handled by the picker adapter.
 - On-demand permissions, denied/restricted handling and cancellation.
 - Serialized revision-aware submissions and controlled conflict recovery.
 - Do not blindly retry consumed launch tickets or non-idempotent requests.
@@ -33,7 +35,8 @@ and signed results remain authoritative; app callbacks report session state only
 
 ## Platform Decision
 
-Validate the provider's native liveness support and evidence format before
-selecting camera/file-picker/browser dependencies. Prefer maintained Flutter
-plugins. Add a real platform plugin only for an actual Swift/Kotlin requirement.
-Generated Android/iOS hosts do not demonstrate native build/camera compatibility.
+image_picker, file_selector and url_launcher provide basic native capture,
+selection and browser launching. These are not liveness providers. Confirm
+provider-native requirements before implementing liveness. Add custom Swift/
+Kotlin only when genuinely required. Simulator/APK builds do not establish
+physical-device capture, permission or liveness compatibility.

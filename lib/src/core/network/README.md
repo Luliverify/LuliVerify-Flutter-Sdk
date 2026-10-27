@@ -1,4 +1,6 @@
 # Network Boundary
 
-Inject HTTP and multipart adapters. No UI imports, merchant secrets, sensitive
-request logging or unbounded retries. Native authentication must be agreed first.
+`LuliVerifySessionTransport` is the injection boundary. The native HTTP adapter
+exchanges one-use server grants and owns memory-only tokens, abortable requests,
+multipart upload and cleanup. It refuses redirects and browser Origin headers.
+No UI imports, merchant secrets, sensitive logging or automatic request retries.

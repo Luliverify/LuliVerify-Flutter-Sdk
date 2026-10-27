@@ -1,17 +1,14 @@
-# luliverify_flutter_example
+# Native SDK Example
 
-A new Flutter project.
+Run `flutter pub get`, then `flutter run` on Android or iOS. Enter the publishable
+key and permitted published release ID. The example calls LuliVerify.launch;
+it does not create SDK routes/controllers. Never paste a private merchant key.
+Use API_BASE_URL, PUBLISHABLE_KEY, RELEASE_ID and RETURN_URL dart-defines to
+preconfigure your own development environment; no credentials are bundled.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Matching native backend endpoints must be deployed first. No credentials,
+customer records or fabricated provider outcomes are bundled with this app.
+Select hosted mode and supply an integration-registered HTTPS return URL to test
+the browser flow. Configure OS app links/domain association first; a callback
+only reports navigation. Native mode requires no return URL.
+See [integration guide](../docs/INTEGRATION.md) for permissions and lifecycle rules.

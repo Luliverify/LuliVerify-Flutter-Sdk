@@ -1,4 +1,6 @@
 # Session Feature
 
-Own exchange, revisions, serialized submissions, cancellation, expiry and recovery.
-Use an agreed native contract, never browser Origin spoofing.
+The implemented controller owns one session and injected transport. It serializes
+mutations, checks revisions, rejects expired/disabled submissions, handles
+ambiguous outcomes and ignores late responses after disposal. Native exchange,
+HTTP, autosave and evidence recovery are implemented in the transport. No Origin spoofing.

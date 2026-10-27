@@ -1,0 +1,727 @@
+{
+  "statusCode": 200,
+  "message": "Synthetic contract fixture; no identity data",
+  "data": {
+    "id": "670100000000000000000003",
+    "revision": 0,
+    "status": "active",
+    "testOnly": true,
+    "expiresAt": "2099-01-01T00:00:00.000Z",
+    "inputContracts": {
+      "welcome": {
+        "version": 1,
+        "stepId": "welcome",
+        "toolType": "welcome",
+        "evidenceRequirements": [],
+        "eligibleEvidenceStepIds": [
+          "welcome"
+        ],
+        "faceReferenceOptions": null,
+        "validationMode": "strict",
+        "fields": [],
+        "requiredFields": [],
+        "intrinsicRequiredFields": [],
+        "uploads": {
+          "enabled": false,
+          "required": false,
+          "submitField": null,
+          "uploadField": null,
+          "stepId": "welcome",
+          "slots": [],
+          "mimeTypes": [],
+          "maxBytes": 10485760,
+          "maxFiles": 0,
+          "maxAttemptsPerSession": 30,
+          "documentTypes": [],
+          "documentTypeRequired": false,
+          "evidenceMode": "uploaded"
+        },
+        "backendReferences": null,
+        "submission": {
+          "method": "POST",
+          "path": "/workflow-sessions/:id/steps",
+          "stepId": "welcome",
+          "inputField": "input",
+          "inputMaxProperties": 30,
+          "requiredEnvelopeFields": [
+            "revision",
+            "stepId",
+            "idempotencyKey",
+            "input"
+          ],
+          "consentRequired": false,
+          "scenario": {
+            "source": "none",
+            "customerEditable": false
+          },
+          "testOnly": true
+        },
+        "configurationSchema": {
+          "requiredFields": {
+            "type": "multi_select",
+            "options": [],
+            "customFields": {
+              "type": "text",
+              "maxLength": 2000,
+              "namePattern": "^[a-z][a-zA-Z0-9_]{0,49}$",
+              "maxConfiguredFields": 30,
+              "forbiddenNames": [
+                "assetIds",
+                "documentType",
+                "image",
+                "selfieImage",
+                "sourceImage",
+                "targetImage",
+                "sourceAssetId",
+                "targetAssetId",
+                "__proto__",
+                "constructor",
+                "prototype"
+              ]
+            }
+          },
+          "acceptedDocuments": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "extractFields": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "checks": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "proofOfAddress": {
+            "type": "boolean",
+            "supported": false
+          },
+          "geolocation": {
+            "type": "boolean",
+            "supported": false
+          },
+          "maximumAttempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "testScenario": {
+            "type": "select",
+            "supported": false,
+            "options": [],
+            "customerEditable": false
+          }
+        },
+        "execution": {
+          "recordedInputSupported": false,
+          "verification": "collection_only",
+          "otpDelivery": null,
+          "inlineBiometricInput": false
+        }
+      },
+      "identity": {
+        "version": 1,
+        "stepId": "identity",
+        "toolType": "cac",
+        "evidenceRequirements": [],
+        "eligibleEvidenceStepIds": [
+          "identity"
+        ],
+        "faceReferenceOptions": null,
+        "validationMode": "strict",
+        "fields": [
+          {
+            "key": "registrationNumber",
+            "label": "Company registration number",
+            "type": "text",
+            "required": true,
+            "minLength": 1,
+            "maxLength": 100
+          },
+          {
+            "key": "companyName",
+            "label": "Registered company name",
+            "type": "text",
+            "required": true,
+            "minLength": 2,
+            "maxLength": 255
+          },
+          {
+            "key": "detailLevel",
+            "label": "Lookup detail",
+            "type": "select",
+            "required": false,
+            "minLength": 1,
+            "maxLength": 255,
+            "options": [
+              {
+                "value": "basic",
+                "label": "Basic"
+              },
+              {
+                "value": "advanced",
+                "label": "Advanced"
+              }
+            ],
+            "default": "basic"
+          }
+        ],
+        "requiredFields": [
+          "registrationNumber",
+          "companyName"
+        ],
+        "intrinsicRequiredFields": [
+          "registrationNumber",
+          "companyName"
+        ],
+        "uploads": {
+          "enabled": false,
+          "required": false,
+          "submitField": null,
+          "uploadField": null,
+          "stepId": "identity",
+          "slots": [],
+          "mimeTypes": [],
+          "maxBytes": 10485760,
+          "maxFiles": 0,
+          "maxAttemptsPerSession": 30,
+          "documentTypes": [],
+          "documentTypeRequired": false,
+          "evidenceMode": "uploaded"
+        },
+        "backendReferences": null,
+        "submission": {
+          "method": "POST",
+          "path": "/workflow-sessions/:id/steps",
+          "stepId": "identity",
+          "inputField": "input",
+          "inputMaxProperties": 30,
+          "requiredEnvelopeFields": [
+            "revision",
+            "stepId",
+            "idempotencyKey",
+            "input"
+          ],
+          "consentRequired": false,
+          "scenario": {
+            "source": "test_runner_or_recorded_input",
+            "customerEditable": false,
+            "options": [
+              "success",
+              "mismatch",
+              "failure",
+              "unavailable"
+            ]
+          },
+          "testOnly": true
+        },
+        "configurationSchema": {
+          "requiredFields": {
+            "type": "multi_select",
+            "options": [
+              {
+                "value": "registrationNumber",
+                "label": "Company registration number"
+              },
+              {
+                "value": "companyName",
+                "label": "Registered company name"
+              },
+              {
+                "value": "detailLevel",
+                "label": "Lookup detail"
+              }
+            ],
+            "customFields": {
+              "type": "text",
+              "maxLength": 2000,
+              "namePattern": "^[a-z][a-zA-Z0-9_]{0,49}$",
+              "maxConfiguredFields": 30,
+              "forbiddenNames": [
+                "assetIds",
+                "documentType",
+                "image",
+                "selfieImage",
+                "sourceImage",
+                "targetImage",
+                "sourceAssetId",
+                "targetAssetId",
+                "__proto__",
+                "constructor",
+                "prototype"
+              ]
+            }
+          },
+          "acceptedDocuments": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "extractFields": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "checks": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "proofOfAddress": {
+            "type": "boolean",
+            "supported": false
+          },
+          "geolocation": {
+            "type": "boolean",
+            "supported": false
+          },
+          "maximumAttempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "testScenario": {
+            "type": "select",
+            "supported": false,
+            "options": [],
+            "customerEditable": false
+          }
+        },
+        "execution": {
+          "recordedInputSupported": true,
+          "verification": "test_only",
+          "otpDelivery": null,
+          "inlineBiometricInput": false
+        }
+      },
+      "completion": {
+        "version": 1,
+        "stepId": "completion",
+        "toolType": "completion",
+        "evidenceRequirements": [],
+        "eligibleEvidenceStepIds": [
+          "completion"
+        ],
+        "faceReferenceOptions": null,
+        "validationMode": "strict",
+        "fields": [],
+        "requiredFields": [],
+        "intrinsicRequiredFields": [],
+        "uploads": {
+          "enabled": false,
+          "required": false,
+          "submitField": null,
+          "uploadField": null,
+          "stepId": "completion",
+          "slots": [],
+          "mimeTypes": [],
+          "maxBytes": 10485760,
+          "maxFiles": 0,
+          "maxAttemptsPerSession": 30,
+          "documentTypes": [],
+          "documentTypeRequired": false,
+          "evidenceMode": "uploaded"
+        },
+        "backendReferences": null,
+        "submission": {
+          "method": "POST",
+          "path": "/workflow-sessions/:id/steps",
+          "stepId": "completion",
+          "inputField": "input",
+          "inputMaxProperties": 30,
+          "requiredEnvelopeFields": [
+            "revision",
+            "stepId",
+            "idempotencyKey",
+            "input"
+          ],
+          "consentRequired": false,
+          "scenario": {
+            "source": "none",
+            "customerEditable": false
+          },
+          "testOnly": true
+        },
+        "configurationSchema": {
+          "requiredFields": {
+            "type": "multi_select",
+            "options": [],
+            "customFields": {
+              "type": "text",
+              "maxLength": 2000,
+              "namePattern": "^[a-z][a-zA-Z0-9_]{0,49}$",
+              "maxConfiguredFields": 30,
+              "forbiddenNames": [
+                "assetIds",
+                "documentType",
+                "image",
+                "selfieImage",
+                "sourceImage",
+                "targetImage",
+                "sourceAssetId",
+                "targetAssetId",
+                "__proto__",
+                "constructor",
+                "prototype"
+              ]
+            }
+          },
+          "acceptedDocuments": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "extractFields": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "checks": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "proofOfAddress": {
+            "type": "boolean",
+            "supported": false
+          },
+          "geolocation": {
+            "type": "boolean",
+            "supported": false
+          },
+          "maximumAttempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "testScenario": {
+            "type": "select",
+            "supported": false,
+            "options": [],
+            "customerEditable": false
+          }
+        },
+        "execution": {
+          "recordedInputSupported": false,
+          "verification": "collection_only",
+          "otpDelivery": null,
+          "inlineBiometricInput": false
+        }
+      }
+    },
+    "currentStep": {
+      "id": "welcome",
+      "type": "welcome",
+      "title": "welcome",
+      "description": "",
+      "maximumAttempts": 3,
+      "configuration": {
+        "requiredFields": [],
+        "acceptedDocuments": [],
+        "extractFields": [],
+        "checks": [],
+        "proofOfAddress": false,
+        "geolocation": false
+      },
+      "inputContract": {
+        "version": 1,
+        "stepId": "welcome",
+        "toolType": "welcome",
+        "evidenceRequirements": [],
+        "eligibleEvidenceStepIds": [
+          "welcome"
+        ],
+        "faceReferenceOptions": null,
+        "validationMode": "strict",
+        "fields": [],
+        "requiredFields": [],
+        "intrinsicRequiredFields": [],
+        "uploads": {
+          "enabled": false,
+          "required": false,
+          "submitField": null,
+          "uploadField": null,
+          "stepId": "welcome",
+          "slots": [],
+          "mimeTypes": [],
+          "maxBytes": 10485760,
+          "maxFiles": 0,
+          "maxAttemptsPerSession": 30,
+          "documentTypes": [],
+          "documentTypeRequired": false,
+          "evidenceMode": "uploaded"
+        },
+        "backendReferences": null,
+        "submission": {
+          "method": "POST",
+          "path": "/workflow-sessions/:id/steps",
+          "stepId": "welcome",
+          "inputField": "input",
+          "inputMaxProperties": 30,
+          "requiredEnvelopeFields": [
+            "revision",
+            "stepId",
+            "idempotencyKey",
+            "input"
+          ],
+          "consentRequired": false,
+          "scenario": {
+            "source": "none",
+            "customerEditable": false
+          },
+          "testOnly": true
+        },
+        "configurationSchema": {
+          "requiredFields": {
+            "type": "multi_select",
+            "options": [],
+            "customFields": {
+              "type": "text",
+              "maxLength": 2000,
+              "namePattern": "^[a-z][a-zA-Z0-9_]{0,49}$",
+              "maxConfiguredFields": 30,
+              "forbiddenNames": [
+                "assetIds",
+                "documentType",
+                "image",
+                "selfieImage",
+                "sourceImage",
+                "targetImage",
+                "sourceAssetId",
+                "targetAssetId",
+                "__proto__",
+                "constructor",
+                "prototype"
+              ]
+            }
+          },
+          "acceptedDocuments": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "extractFields": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "checks": {
+            "type": "multi_select",
+            "supported": false,
+            "options": []
+          },
+          "proofOfAddress": {
+            "type": "boolean",
+            "supported": false
+          },
+          "geolocation": {
+            "type": "boolean",
+            "supported": false
+          },
+          "maximumAttempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "testScenario": {
+            "type": "select",
+            "supported": false,
+            "options": [],
+            "customerEditable": false
+          }
+        },
+        "execution": {
+          "recordedInputSupported": false,
+          "verification": "collection_only",
+          "otpDelivery": null,
+          "inlineBiometricInput": false
+        }
+      }
+    },
+    "availableSubTools": [
+      {
+        "id": "welcome",
+        "type": "welcome",
+        "title": "welcome",
+        "description": "",
+        "maximumAttempts": 3,
+        "configuration": {
+          "requiredFields": [],
+          "acceptedDocuments": [],
+          "extractFields": [],
+          "checks": [],
+          "proofOfAddress": false,
+          "geolocation": false
+        },
+        "inputContract": {
+          "version": 1,
+          "stepId": "welcome",
+          "toolType": "welcome",
+          "evidenceRequirements": [],
+          "eligibleEvidenceStepIds": [
+            "welcome"
+          ],
+          "faceReferenceOptions": null,
+          "validationMode": "strict",
+          "fields": [],
+          "requiredFields": [],
+          "intrinsicRequiredFields": [],
+          "uploads": {
+            "enabled": false,
+            "required": false,
+            "submitField": null,
+            "uploadField": null,
+            "stepId": "welcome",
+            "slots": [],
+            "mimeTypes": [],
+            "maxBytes": 10485760,
+            "maxFiles": 0,
+            "maxAttemptsPerSession": 30,
+            "documentTypes": [],
+            "documentTypeRequired": false,
+            "evidenceMode": "uploaded"
+          },
+          "backendReferences": null,
+          "submission": {
+            "method": "POST",
+            "path": "/workflow-sessions/:id/steps",
+            "stepId": "welcome",
+            "inputField": "input",
+            "inputMaxProperties": 30,
+            "requiredEnvelopeFields": [
+              "revision",
+              "stepId",
+              "idempotencyKey",
+              "input"
+            ],
+            "consentRequired": false,
+            "scenario": {
+              "source": "none",
+              "customerEditable": false
+            },
+            "testOnly": true
+          },
+          "configurationSchema": {
+            "requiredFields": {
+              "type": "multi_select",
+              "options": [],
+              "customFields": {
+                "type": "text",
+                "maxLength": 2000,
+                "namePattern": "^[a-z][a-zA-Z0-9_]{0,49}$",
+                "maxConfiguredFields": 30,
+                "forbiddenNames": [
+                  "assetIds",
+                  "documentType",
+                  "image",
+                  "selfieImage",
+                  "sourceImage",
+                  "targetImage",
+                  "sourceAssetId",
+                  "targetAssetId",
+                  "__proto__",
+                  "constructor",
+                  "prototype"
+                ]
+              }
+            },
+            "acceptedDocuments": {
+              "type": "multi_select",
+              "supported": false,
+              "options": []
+            },
+            "extractFields": {
+              "type": "multi_select",
+              "supported": false,
+              "options": []
+            },
+            "checks": {
+              "type": "multi_select",
+              "supported": false,
+              "options": []
+            },
+            "proofOfAddress": {
+              "type": "boolean",
+              "supported": false
+            },
+            "geolocation": {
+              "type": "boolean",
+              "supported": false
+            },
+            "maximumAttempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "testScenario": {
+              "type": "select",
+              "supported": false,
+              "options": [],
+              "customerEditable": false
+            }
+          },
+          "execution": {
+            "recordedInputSupported": false,
+            "verification": "collection_only",
+            "otpDelivery": null,
+            "inlineBiometricInput": false
+          }
+        }
+      }
+    ],
+    "actions": {
+      "canSubmit": true,
+      "canRecoverEvidence": false,
+      "canResume": false,
+      "canHandoff": false
+    },
+    "branding": {
+      "logoAssetId": null,
+      "logoUrl": null,
+      "displayName": "Mobile contract fixture",
+      "logoAlt": "Company logo",
+      "textColor": "#171717",
+      "backgroundColor": "#FFFFFF",
+      "buttonTextColor": "#FFFFFF",
+      "buttonRadius": 8,
+      "continueLabel": "Continue",
+      "submitLabel": "Submit",
+      "successTitle": "Completed",
+      "successMessage": "Your submission has been received.",
+      "failureTitle": "Unable to complete",
+      "failureMessage": "Please contact support.",
+      "privacyUrl": null,
+      "termsUrl": null,
+      "primaryColor": "#2336F0",
+      "secondaryColor": "#F3F4FF",
+      "accentColor": "#13BA58",
+      "neutralColor": "#FFFFFF",
+      "font": "Inter",
+      "buttonStyle": "filled",
+      "supportName": "",
+      "supportUrl": null
+    },
+    "settings": {
+      "aml": {
+        "enabled": false,
+        "sourceStepId": null
+      },
+      "fraud": {
+        "enabled": false,
+        "sourceStepId": null
+      },
+      "review": "automatic",
+      "timeoutMinutes": 30,
+      "uploadRetentionDays": null,
+      "dataRetentionDays": 90,
+      "consentText": "",
+      "consentVersion": "1",
+      "resume": false,
+      "multipleDevices": false
+    },
+    "results": []
+  }
+}

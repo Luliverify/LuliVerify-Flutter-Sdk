@@ -1,6 +1,30 @@
 # LuliVerify Flutter SDK
 
-Private foundation, not a working verification SDK. Flutter is the first implementation.
+Development SDK for backend-driven native and hosted sessions. Execution remains
+test-only; provider-native liveness and production readiness are separate gates.
+
+## Quick start
+
+```dart
+final result = await LuliVerify.launch(
+  context,
+  publishableKey: 'lv_pk_...',
+  releaseId: 'YOUR_PUBLISHED_RELEASE_ID',
+);
+```
+
+The SDK owns navigation, creation/exchange, controllers, fields, evidence and
+cleanup. Your app needs a Flutter Navigator (MaterialApp, CupertinoApp or
+WidgetsApp); you do not create SDK screens or Material routes yourself.
+The publishable key must permit that release using the integration's existing
+allowedReleaseIds setting. No merchant server is needed to launch. Never embed
+a private merchant key. Client customer references are correlation only.
+
+Optional arguments: `customerReference`, `mode`, `returnUrl`, `apiBaseUrl`, and
+`widgetOrigin`. Hosted mode requires a registered HTTPS app link and platform
+domain associations. See the integration guide for setup and result semantics.
+Native callbacks describe session status; hosted returns describe navigation.
+Neither is authorization to grant sensitive access.
 
 ```text
 lib/luliverify_flutter.dart       Public exports only
@@ -18,8 +42,10 @@ example/                        Android/iOS host with local path dependency
 docs/                           Architecture and delivery checklist
 ```
 
-Only configuration and local errors are implemented. Other modules contain
-ownership notes, not fake clients/provider responses. Compose maintained plugins
+Configuration, immutable backend contracts, a revision-safe controller, native
+HTTP transport, backend-driven scalar forms, native capture/file selection and
+multipart uploads are implemented. A hosted browser adapter is separate. There
+are no fabricated provider results. Compose maintained plugins
 before adding Swift/Kotlin code; no custom platform bridge is justified yet.
 
 ## Develop
@@ -38,7 +64,27 @@ flutter test
 flutter run
 ```
 
-The example displays presentation intent only. No HTTP calls, capture, liveness,
-redirect or verification is implemented. Native device builds remain unverified.
+The example accepts a publishable key and release ID and invokes the single-call
+launcher. Matching backend additions must be deployed first. Real-provider
+liveness and OTP delivery are not implemented. Liveness has an explicitly labeled
+test-only simulation; production liveness remains blocked.
 Package names/identifiers are provisional and publication is disabled.
 See [architecture](docs/ARCHITECTURE.md) and [roadmap](docs/ROADMAP.md).
+
+## Session Core
+
+`LuliVerifySession.fromResponse` parses backend envelopes and rejects unknown
+versions, unsupported field/status types and inconsistent step contracts.
+Field/options, evidence and upload metadata remain deeply immutable.
+Session tokens are stripped from public snapshots.
+
+`LuliVerifySessionController` owns one injected `LuliVerifySessionTransport`,
+exposes observable state, serializes mutations, rejects stale/wrong-session
+responses, and blocks expired/backend-disabled submission. Failed or ambiguous
+mutations are not retried; refresh first. Disposing invalidates late responses
+and releases local resources, without silently cancelling the remote session.
+
+Terminal notifications are advisory, not merchant-authoritative approval. Steps
+requiring developer test outcomes are blocked, not exposed as customer outcome
+selectors. See the [integration guide](docs/INTEGRATION.md) and
+[mobile contract status](docs/MOBILE_CONTRACT_AUDIT.md).
