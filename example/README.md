@@ -1,17 +1,11 @@
 # LuliVerify Flutter example
 
-A development host for `LuliVerify.launch`, using the package via a local path
-dependency. It demonstrates SDK-owned routing in native and hosted modes; it does
-not implement its own verification UI or bundle private credentials.
+Use this application to try the SDK’s native and hosted presentations. It calls
+`LuliVerify.launch` and lets the SDK handle verification screens and navigation.
 
-## Before running
+## Run
 
-- Use Flutter 3.47+/Dart 3.13+ and compatible Android/iOS tooling.
-- Complete business onboarding, publish a workflow, and obtain its **release ID**.
-- Issue a publishable key whose integration permits that release.
-- Deploy a compatible backend; the default API is `https://luli-api.luliverify.io`.
-- Do not use a workflow/draft ID or a private merchant key in these fields.
-
+Have your LuliVerify publishable key and permitted workflow release ID ready.
 From the repository root:
 
 ```sh
@@ -21,13 +15,13 @@ flutter pub get
 flutter run
 ```
 
-Select the desired device when prompted or use `flutter devices` and
-`flutter run -d DEVICE_ID` with an actual returned device ID.
+Select an available Android or iOS device, then enter your credentials on the
+example screen. Use a publishable key, not a private account key. Choose the
+published release ID rather than a workflow/draft ID.
 
-## Configuration
+## Optional configuration file
 
-Enter the publishable key and release ID in the UI, or prepopulate them through
-a local Dart-define file:
+Prepopulate the fields with a local Dart-define file:
 
 ```json
 {
@@ -42,60 +36,45 @@ a local Dart-define file:
 flutter run --dart-define-from-file=/absolute/path/to/local-sdk-config.json
 ```
 
-Every value above is a placeholder. Keep real account configuration outside the
-repository. Dart defines are compiled into the application and are not secret
-storage. Never include passwords, private merchant keys, tokens or tickets.
+These values are placeholders. Keep real configuration outside the repository.
+Dart defines are compiled into the application, so use only public configuration;
+never include passwords, private keys, session tokens, or launch tickets.
 
-`PUBLISHABLE_KEY`/`RELEASE_ID` populate form fields. `RETURN_URL` populates the
-hosted return field. `API_BASE_URL` overrides the API endpoint; it must be HTTPS.
-The example starts in native mode; use the switch for hosted mode.
+## Choose a presentation
 
-## Native mode
+**Native:** leave “Use hosted browser flow” off. The SDK displays the workflow
+configured in LuliVerify, including its fields and evidence requirements. No
+return URL is needed.
 
-Leave “Use hosted browser flow” off. The SDK creates/exchanges native session
-access and displays the published backend workflow. No return URL is required.
+**Hosted:** turn the switch on and enter your registered HTTPS return URL. The SDK
+opens the hosted verification website in the external browser. To return to your
+app, configure the address as an Android App Link and iOS Universal Link for your
+own domain and signed application. The field alone does not install those
+associations.
 
-The example’s status message is advisory. `completed` means the native session
-finished, not that the business should grant access automatically. Current
-backend execution is test-only; real provider liveness and OTP delivery remain
-unintegrated. Customer screens omit test notices, while API metadata keeps them.
+See the [hosted integration guide](../docs/INTEGRATION.md#hosted-integration) and
+[platform setup](../README.md#android-setup) for the required configuration.
 
-## Hosted mode and returning to this app
+## Handle the result
 
-Enable “Use hosted browser flow” and supply an exact integration-registered HTTPS
-return URL. The SDK opens the hosted site externally and waits for a matching
-App Link / Universal Link while its route remains alive.
+The example displays the status returned by the SDK. Native session completion
+and a hosted return are different events. Use your authorized LuliVerify
+integration to retrieve the verification result before making access decisions.
 
-**The checked-in example does not configure OS link associations.** Merely typing
-a URL here does not make it open the app. To finish a real return flow:
+The launch Future belongs to the application process that opened it. If the app
+restarts, restore normal app navigation and retrieve the session result separately.
 
-1. Choose a return address on a domain you control.
-2. Register that exact address on the backend integration.
-3. Add Android's verified VIEW intent filter and host `assetlinks.json` for the
-   actual package/signing certificate.
-4. Add iOS Associated Domains and host `apple-app-site-association` for the actual
-   Apple team/bundle identity and return paths.
-5. Configure Flutter/app_links handling consistently, then verify on installed
-   apps/devices that the browser link opens the app.
+## Platform configuration
 
-A successful matching link reports `hostedReturned`, not verification approval.
-A cold start after the OS kills the app does not restore this SDK's in-memory
-flow. See the [integration guide](../docs/INTEGRATION.md) and the
-[package README](../README.md#hosted-browser-flow) for the full contract.
+Android requires API 24+; the example includes INTERNET permission. Configure the
+camera and return-link behaviour appropriate to your application.
 
-## Platform testing
+iOS requires 13.0+; the example includes camera/photo-library usage descriptions.
+Use a physical device for camera capture and permission validation.
 
-Android uses API 24+; the manifest already includes INTERNET permission. The
-camera/file plugins handle on-demand permission/selection. The dedicated Android
-emulator used in the smoke test needs `-camera-front emulated` to exercise capture.
-
-The iOS example already contains camera/photo-library usage descriptions. Simulator
-builds and screens have been checked, but actual front-camera capture requires a
-physical iPhone. The tested simulator's native Files provider returned “Content
-Unavailable”; complete iOS upload validation is still pending.
-
-[Android report](../docs/ANDROID_SMOKE_TEST.md) ·
-[iOS report](../docs/IOS_SMOKE_TEST.md)
+For hosted returns, add your Android intent filter and signing association file,
+and your iOS Associated Domains entitlement and association file. Use the actual
+package ID, signing fingerprints, Apple team ID, and bundle ID for your build.
 
 ## Validation commands
 
@@ -109,7 +88,6 @@ flutter build apk --debug
 flutter build ios --simulator --debug
 ```
 
-The iOS build requires macOS/Xcode. Supply your local Dart-define file to build
-commands if you want prefilled development fields. Otherwise the app asks for
-configuration at runtime. Example tests check the host; run `flutter test` from
-the package root for SDK contract, transport, UI and callback tests.
+The iOS build requires macOS/Xcode. Add your local Dart-define file to a build
+command if you want prefilled fields. Run `flutter test` from the package root
+for SDK contract, transport, UI, and callback tests.

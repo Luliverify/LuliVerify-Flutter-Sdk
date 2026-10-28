@@ -1,7 +1,7 @@
 /// LuliVerify native and hosted verification integration for Flutter.
 ///
 /// Start with LuliVerify.launch using a publishable key and published release ID.
-/// Backend contracts own flow/progression; callbacks report navigation/session
+/// LuliVerify contracts own flow/progression; callbacks report navigation/session
 /// state only. Lower-level types are provided for advanced lifecycle composition.
 /// See the repository README for installation, platform setup and known limits.
 library;

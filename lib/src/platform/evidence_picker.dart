@@ -7,10 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import '../core/contracts/input_contract.dart';
 import '../core/errors/luliverify_exception.dart';
 
-/// Builds native file-picker filters from a supported backend MIME policy.
+/// Builds native file-picker filters from a supported LuliVerify MIME policy.
 ///
 /// Supplies iOS UTIs plus matching extension/MIME filters for PDF, PNG and JPEG.
-/// Use backend-validated MIME values; a filter is selection assistance, not file
+/// Use LuliVerify-validated MIME values; a filter is selection assistance, not file
 /// verification. The picker also inspects file bytes before accepting evidence.
 XTypeGroup evidenceTypeGroup(Iterable<String> acceptedMimeTypes) {
   final types = acceptedMimeTypes.toSet();
@@ -53,8 +53,8 @@ final class LuliVerifyPickedEvidence {
 
 /// Native file/camera adapter constrained by the current upload contract.
 ///
-/// Capture is not provider liveness. Production liveness cannot be replaced by
-/// a photo; backend-marked test liveness must be opted into explicitly.
+/// Produces media for the current LuliVerify session. Retrieve verification
+/// results separately through your authorized LuliVerify integration.
 class LuliVerifyEvidencePicker {
   final ImagePicker _images = ImagePicker();
 
@@ -66,12 +66,12 @@ class LuliVerifyEvidencePicker {
   /// operation-owned temporary file or null. That file is deleted best-effort after
   /// reading. User-selected document-provider files are never deleted.
   ///
-  /// [testOnlyLiveness] is a development-only opt-in for a test liveness contract;
-  /// the session/controller must separately enforce its backend testOnly flag.
+  /// [testOnlyLiveness] is an advanced capture option. App integrations should
+  /// use the SDK-managed flow and its session eligibility checks.
   /// Size and file signatures are checked before returning an owned byte buffer.
   /// Throws LuliVerifyException for disabled/unsupported files, permissions/capture
-  /// failures, or a provider-required liveness step. Choosing a file proves nothing
-  /// about document authenticity or human presence.
+  /// failures, or an operation not permitted by the current session. File
+  /// selection and verification results are separate steps in the integration.
   Future<LuliVerifyPickedEvidence?> pick({
     required LuliVerifyInputContract contract,
     bool camera = false,

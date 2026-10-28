@@ -2,7 +2,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/errors/luliverify_exception.dart';
 
-/// Single-use external-browser launcher for a backend-minted hosted session.
+/// Single-use external-browser launcher for a LuliVerify-minted hosted session.
 ///
 /// This low-level adapter neither creates sessions nor registers/listens for OS
 /// app links. Prefer LuliVerify.launch for the managed browser/listener flow.
@@ -13,7 +13,7 @@ final class LuliVerifyHostedLaunch {
   /// The URL must contain exactly one sessionId and one opaque ticket in its
   /// fragment. All supplied URLs must be HTTPS without credentials;
   /// [registeredReturnUrl] must have no fragment. Invalid values throw
-  /// [ArgumentError]. Backend allowlisting and app/domain association are still
+  /// [ArgumentError]. LuliVerify allowlisting and app/domain association are still
   /// required; construction does not install them. Never log the launch URL.
   LuliVerifyHostedLaunch({
     required Uri launchUrl,
@@ -49,7 +49,7 @@ final class LuliVerifyHostedLaunch {
   /// Complete registered return URI; incoming links must match its exact string.
   final Uri registeredReturnUrl;
 
-  /// Session identifier parsed from the backend-minted launch URL.
+  /// Session identifier parsed from the LuliVerify-minted launch URL.
   late final String sessionId;
   bool _opened = false;
   bool _returned = false;

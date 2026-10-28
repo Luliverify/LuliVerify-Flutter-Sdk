@@ -6,7 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 /// Geist and custom controls provide the default appearance. Host application
 /// themes remain unchanged when using the managed launcher.
 abstract final class LuliVerifyDesign {
-  /// Default LuliVerify accent colour used when backend branding is absent/unsafe.
+  /// Default LuliVerify accent colour used when LuliVerify branding is absent/unsafe.
   static const primary = Color(0xff1f3fe2);
 
   /// Primary text/icon colour on light SDK surfaces.
@@ -21,7 +21,7 @@ abstract final class LuliVerifyDesign {
   /// Default outline colour for SDK fields and secondary controls.
   static const border = Color(0xffd9dce7);
 
-  /// Builds a scoped theme from optional backend branding.
+  /// Builds a scoped theme from optional LuliVerify branding.
   ///
   /// Supports a valid six-digit primaryColor with adequate white-label contrast
   /// and buttonRadius from 0 to 32. Unsupported/unsafe values use SDK defaults.
@@ -276,14 +276,14 @@ class LuliNotice extends StatelessWidget {
   );
 }
 
-/// Accessible branded selection field using backend values and labels.
+/// Accessible branded selection field using LuliVerify values and labels.
 ///
 /// Keys are submitted values; labels are display-only. The selection sheet
 /// returns the original key and preserves the parent form’s save/validation hooks.
 class LuliSelect extends FormField<String> {
   /// Creates a select field from a customer-facing label and value-to-label options.
   ///
-  /// The initial value and allowed options must come from the current backend
+  /// The initial value and allowed options must come from the current LuliVerify
   /// contract. onChanged receives the selected wire value, not its label.
   LuliSelect({
     super.key,

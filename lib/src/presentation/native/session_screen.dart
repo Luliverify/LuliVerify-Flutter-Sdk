@@ -805,7 +805,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     }
   }
 
-  /// Serializes a remove/recovery action and refreshes backend state before reuse.
+  /// Serializes a remove/recovery action and refreshes LuliVerify state before reuse.
   Future<void> _evidenceOperation(Future<void> Function() operation) async {
     setState(() {
       _uploading = true;

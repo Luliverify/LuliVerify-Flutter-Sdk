@@ -3,7 +3,7 @@ import 'json_contract.dart';
 
 /// Scalar control types understood by the native form renderer.
 enum LuliVerifyFieldType {
-  /// A string field with backend length/pattern constraints.
+  /// A string field with LuliVerify length/pattern constraints.
   text,
 
   /// An email-address string.
@@ -15,13 +15,13 @@ enum LuliVerifyFieldType {
   /// A finite numeric input with optional minimum and maximum.
   number,
 
-  /// A backend-defined value selected using its separate display label.
+  /// A LuliVerify-defined value selected using its separate display label.
   select,
 }
 
-/// Immutable backend descriptor for a scalar customer input.
+/// Immutable LuliVerify descriptor for a scalar customer input.
 ///
-/// The backend key/value contract remains authoritative; labels are display-only.
+/// The LuliVerify key/value contract remains authoritative; labels are display-only.
 final class LuliVerifyInputField {
   LuliVerifyInputField._(
     this.raw,
@@ -31,7 +31,7 @@ final class LuliVerifyInputField {
     this.required,
   );
 
-  /// Parses and freezes one backend field descriptor.
+  /// Parses and freezes one LuliVerify field descriptor.
   ///
   /// Validates known metadata types, unique select values and select defaults.
   /// Throws LuliVerifyException for malformed data or an unsupported field type.
@@ -81,19 +81,19 @@ final class LuliVerifyInputField {
     );
   }
 
-  /// All backend validation/format/options metadata is retained without mutation.
+  /// All LuliVerify validation/format/options metadata is retained without mutation.
   final Map<String, Object?> raw;
 
-  /// Unchanged backend input key used when submitting the answer.
+  /// Unchanged LuliVerify input key used when submitting the answer.
   final String key;
 
-  /// Backend-authored customer-facing field label.
+  /// LuliVerify-authored customer-facing field label.
   final String label;
 
   /// Validated scalar control type required by this field.
   final LuliVerifyFieldType type;
 
-  /// Whether the backend requires a value for this field.
+  /// Whether LuliVerify requires a value for this field.
   final bool required;
 }
 
@@ -183,16 +183,16 @@ final class LuliVerifyInputContract {
     );
   }
 
-  /// Complete backend evidence, upload, submission and configuration metadata.
+  /// Complete LuliVerify evidence, upload, submission and configuration metadata.
   final Map<String, Object?> raw;
 
-  /// Backend step identifier to which this input/evidence contract belongs.
+  /// LuliVerify step identifier to which this input/evidence contract belongs.
   final String stepId;
 
-  /// Backend operation identifier, such as cac or document_upload.
+  /// LuliVerify operation identifier, such as cac or document_upload.
   final String toolType;
 
-  /// Unmodifiable scalar field descriptors in backend order.
+  /// Unmodifiable scalar field descriptors in LuliVerify order.
   final List<LuliVerifyInputField> fields;
 
   /// Immutable submission metadata, including consent and scenario-source policy.

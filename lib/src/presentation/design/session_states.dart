@@ -114,7 +114,7 @@ class LuliTerminalView extends StatelessWidget {
     required this.onClose,
   });
 
-  /// Backend/local lifecycle indicators selecting the terminal message.
+  /// LuliVerify/local lifecycle indicators selecting the terminal message.
   final bool expired, completed, cancelled;
 
   /// Host action invoked by Return to app; does not itself authorize or resume.

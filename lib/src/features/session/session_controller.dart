@@ -7,7 +7,7 @@ import '../../core/errors/luliverify_exception.dart';
 import '../../core/network/session_transport.dart';
 import 'workflow_session.dart';
 
-/// Local orchestration phase, distinct from the backend session status.
+/// Local orchestration phase, distinct from the LuliVerify session status.
 enum LuliVerifySessionPhase {
   /// No session read has started.
   idle,
@@ -15,7 +15,7 @@ enum LuliVerifySessionPhase {
   /// A session read is in progress.
   loading,
 
-  /// A snapshot is available; backend action flags still govern submission.
+  /// A snapshot is available; LuliVerify action flags still govern submission.
   ready,
 
   /// A step mutation or cancellation is in progress.
@@ -27,7 +27,7 @@ enum LuliVerifySessionPhase {
   /// The active session has reached its expiry boundary.
   expired,
 
-  /// A completed, failed, cancelled or expired backend state was adopted.
+  /// A completed, failed, cancelled or expired LuliVerify state was adopted.
   terminal,
 
   /// Local controller resources have been released.
@@ -43,7 +43,7 @@ final class LuliVerifySessionController extends ChangeNotifier {
   /// Creates a controller bound to [sessionId] and an owned transport.
   ///
   /// The transport must address that same session. The optional clock supplies
-  /// local expiry time for deterministic tests; production defaults to DateTime.now.
+  /// local expiry time for deterministic tests; normal use defaults to DateTime.now.
   /// Call [refresh] before submission and [dispose] when the flow ends.
   LuliVerifySessionController({
     required this.sessionId,
@@ -101,7 +101,7 @@ final class LuliVerifySessionController extends ChangeNotifier {
       ? LuliVerifySessionPhase.expired
       : _phase;
 
-  /// True only when ready, not busy and explicitly allowed by backend action flags.
+  /// True only when ready, not busy and explicitly allowed by LuliVerify action flags.
   bool get canSubmit =>
       phase == LuliVerifySessionPhase.ready &&
       !_busy &&
@@ -114,15 +114,15 @@ final class LuliVerifySessionController extends ChangeNotifier {
   /// Inspect controller state before continuing and do not overlap operations.
   Future<void> refresh() => _run(() => _transport.read(), false);
 
-  /// Submits answers for an available step at the current backend revision.
+  /// Submits answers for an available step at the current LuliVerify revision.
   ///
   /// [stepId] must be currently available. [idempotencyKey] is an 8–100 character
   /// letters/digits/underscore/hyphen request identifier; do not blindly replay an
-  /// uncertain mutation. [input] uses backend keys/values, not display labels.
+  /// uncertain mutation. [input] uses LuliVerify keys/values, not display labels.
   /// [consentAccepted] must be true when the contract requires consent.
   ///
-  /// [simulateLiveness] is permitted only for backend-marked test liveness and
-  /// preserves workflow-authored outcomes; it cannot enable production liveness.
+  /// [simulateLiveness] is an advanced scenario override for eligible liveness
+  /// sessions. App integrations should leave its default and follow session policy.
   /// Validation/overlap guards throw LuliVerifyException. I/O failures are captured
   /// in [error]; inspect [phase] after awaiting and refresh before retrying.
   Future<void> submit({

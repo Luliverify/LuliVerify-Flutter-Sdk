@@ -2,27 +2,27 @@ import '../../core/contracts/input_contract.dart';
 import '../../core/contracts/json_contract.dart';
 import '../../core/errors/luliverify_exception.dart';
 
-/// Backend session lifecycle state, distinct from local controller phases.
+/// LuliVerify session lifecycle state, distinct from local controller phases.
 enum LuliVerifySessionStatus {
   /// Workflow remains in progress.
   active,
 
-  /// Backend session finished; this is not merchant authorization.
+  /// LuliVerify session finished; this is not merchant authorization.
   completed,
 
-  /// Backend session ended unsuccessfully.
+  /// LuliVerify session ended unsuccessfully.
   failed,
 
-  /// Backend confirmed session cancellation.
+  /// LuliVerify confirmed session cancellation.
   cancelled,
 
-  /// Backend marked the session expired.
+  /// LuliVerify marked the session expired.
   expired,
 }
 
-/// Deeply immutable, validated backend workflow/session snapshot.
+/// Deeply immutable, validated LuliVerify workflow/session snapshot.
 ///
-/// Only current/available backend steps may be submitted. Public snapshots strip
+/// Only current/available LuliVerify steps may be submitted. Public snapshots strip
 /// the sessionToken but may still contain personal data; do not log the raw map.
 final class LuliVerifySession {
   LuliVerifySession._(
@@ -147,33 +147,33 @@ final class LuliVerifySession {
   /// Evidence references, results or customer inputs may remain sensitive.
   final Map<String, Object?> raw;
 
-  /// Backend session identifier; this is not a bearer credential.
+  /// LuliVerify session identifier; this is not a bearer credential.
   final String id;
 
-  /// Backend revision required for the next optimistic-concurrency mutation.
+  /// LuliVerify revision required for the next optimistic-concurrency mutation.
   final int revision;
 
-  /// Validated backend lifecycle state.
+  /// Validated LuliVerify lifecycle state.
   final LuliVerifySessionStatus status;
 
-  /// Backend session expiry normalized to UTC.
+  /// LuliVerify session expiry normalized to UTC.
   final DateTime expiresAt;
 
-  /// Whether backend execution is test-only; independent of customer UI wording.
+  /// Whether this session belongs to LuliVerify’s testing environment.
   final bool testOnly;
 
-  /// Unmodifiable contracts indexed by their backend step IDs.
+  /// Unmodifiable contracts indexed by their LuliVerify step IDs.
   final Map<String, LuliVerifyInputContract> contracts;
 
   /// Current step, or null for terminal snapshots.
   final String? currentStepId;
 
-  /// Unmodifiable backend-authorized step choices for this snapshot.
+  /// Unmodifiable LuliVerify-authorized step choices for this snapshot.
   final List<String> availableStepIds;
 
-  /// Whether the backend status is no longer active.
+  /// Whether the LuliVerify status is no longer active.
   bool get isTerminal => status != LuliVerifySessionStatus.active;
 
-  /// Backend action flag only; local busy/expiry checks still apply.
+  /// LuliVerify action flag only; local busy/expiry checks still apply.
   bool get backendCanSubmit => jsonObject(raw['actions'])['canSubmit'] == true;
 }

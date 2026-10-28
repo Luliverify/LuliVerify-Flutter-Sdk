@@ -14,7 +14,7 @@ abstract interface class LuliVerifySessionTransport {
   /// Do not automatically retry ambiguous mutations.
   Future<LuliVerifySession> submit(Map<String, Object?> body);
 
-  /// Requests remote cancellation and returns the resulting backend snapshot.
+  /// Requests remote cancellation and returns the resulting LuliVerify snapshot.
   Future<LuliVerifySession> cancel();
 
   /// Releases local resources and invalidates pending work.

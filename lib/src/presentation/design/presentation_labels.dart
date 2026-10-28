@@ -1,4 +1,4 @@
-/// Formats a legacy backend value for display without changing its wire value.
+/// Formats a legacy LuliVerify value for display without changing its wire value.
 ///
 /// Known document acronyms/names receive readable labels. New server-provided
 /// presentation metadata takes precedence in the calling widgets.
@@ -27,7 +27,7 @@ String presentationLabel(String value) {
 /// Combines allowed [values] with optional server label metadata.
 ///
 /// Preserves allowed values/order, ignores metadata for other values, and falls
-/// back to readable legacy labels. Never submit these labels as backend values.
+/// back to readable legacy labels. Never submit these labels as LuliVerify values.
 Map<String, String> presentationOptions(List<String> values, Object? metadata) {
   final labels = <String, String>{};
   if (metadata is List) {

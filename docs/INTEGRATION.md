@@ -1,172 +1,160 @@
-# Flutter integration
+# Flutter integration guide
 
-Development package. Deploy the matching backend additions first. All current
-verification sessions are test-only; real liveness and OTP delivery are pending.
+Use the Flutter SDK to launch a published LuliVerify workflow with native screens
+or the hosted verification website. LuliVerify supplies the steps, fields,
+options, validation requirements, and session progression.
 
-## Default native integration
+## Credentials and workflow selection
 
-Create/publish the workflow in the dashboard, issue a publishable key, and permit
-the published release using the existing allowedReleaseIds integration setting.
-The release must contain input contract version 1; republish older workflows.
+Obtain a publishable key and published release ID from your LuliVerify dashboard.
+The integration must permit the selected release. Use a release ID rather than a
+workflow or draft ID. Update the app’s release ID when choosing a newly published
+workflow version.
+
+Only publishable credentials belong in the app. Keep private account credentials,
+launch tickets, and session tokens out of source control and logs.
+
+## Native integration
 
 ```dart
+import 'package:flutter/widgets.dart';
 import 'package:luliverify_flutter/luliverify_flutter.dart';
 
-final result = await LuliVerify.launch(
-  context,
-  publishableKey: 'lv_pk_...',
-  releaseId: 'YOUR_PUBLISHED_RELEASE_ID',
-  customerReference: 'optional-correlation-reference',
-);
+Future<LuliVerifyResult> startVerification(BuildContext context) {
+  return LuliVerify.launch(
+    context,
+    publishableKey: 'YOUR_PUBLISHABLE_KEY',
+    releaseId: 'YOUR_PUBLISHED_RELEASE_ID',
+    customerReference: 'optional-customer-reference',
+  );
+}
 ```
 
-No business-owned server is required to start verification. The SDK calls
-`POST /mobile/launches`, exchanges the returned one-use ticket at
-`POST /mobile-sessions/:id/exchange`, and uses scoped session credentials for
-the backend-driven steps. Keys are creation-only and release-scoped; customer
-references from apps are untrusted correlation, not customer authentication.
+Replace the placeholders with issued values. The SDK owns its route, session,
+forms, evidence capture, uploads, and resource cleanup. The context must be
+mounted below a Navigator supplied by MaterialApp, CupertinoApp, or WidgetsApp.
+No additional verification screen or navigation boilerplate is required.
 
-`context` must be inside an app with a Navigator. MaterialApp, CupertinoApp or
-WidgetsApp can supply it. No SDK route, controller or Material screen needs to
-be written by the integrator. A scoped LuliVerify theme is installed on the SDK
-route without changing the host theme. Geist is bundled (OFL license); Lucide
-outline icons and custom controls replace default-looking Material screens.
+One verification flow may be open at a time. Disable repeated launch actions while
+awaiting the result, and check `context.mounted` before changing host UI afterwards.
+Native mode does not use a return URL.
 
-Optional arguments: customerReference, mode, returnUrl, apiBaseUrl (HTTPS),
-widgetOrigin (HTTPS). Production-domain defaults are LuliVerify's API/widget
-hosts, but this development package requires the matching API deployment.
-One flow may be open at a time. Do not automatically retry ambiguous launch or
-exchange requests. Reopening after dismissal starts a new session.
+## Configuration
 
-Advanced/testing integrations can supply httpClientFactory. Return a new client
-on each call; the SDK owns and closes it. Do not inject private credentials,
-cookies, automatic retries or Origin headers. The SDK UI currently supplies
-English copy/localizations, with backend-authored labels/descriptions preserved.
+The launch API accepts `publishableKey`, `releaseId`, `customerReference`, `mode`,
+`returnUrl`, `apiBaseUrl`, `widgetOrigin`, and `httpClientFactory`. The
+[README configuration table](../README.md#launch-configuration) describes defaults
+and constraints. A customer reference is correlation metadata, not authentication.
 
-## Hosted presentation
+The SDK applies workflow branding in its own route without replacing the host
+application’s theme. Customer-facing labels and options follow the LuliVerify
+session. SDK-owned copy is English.
+
+Advanced integrations can provide `httpClientFactory`. Return a fresh client on
+each invocation; the SDK owns and closes it. Do not inject private credentials,
+cookies, Origin headers, or automatic mutation retries.
+
+## Hosted integration
 
 ```dart
-final result = await LuliVerify.launch(
-  context,
-  publishableKey: 'lv_pk_...',
-  releaseId: 'YOUR_PUBLISHED_RELEASE_ID',
-  mode: LuliVerifyPresentation.hostedWeb,
-  returnUrl: Uri.parse('https://your-app.example/verification-return'),
-);
+import 'package:flutter/widgets.dart';
+import 'package:luliverify_flutter/luliverify_flutter.dart';
+
+Future<LuliVerifyResult> startHostedVerification(BuildContext context) {
+  return LuliVerify.launch(
+    context,
+    publishableKey: 'YOUR_PUBLISHABLE_KEY',
+    releaseId: 'YOUR_PUBLISHED_RELEASE_ID',
+    mode: LuliVerifyPresentation.hostedWeb,
+    returnUrl: Uri.parse('https://app.your-domain.example/verification-return'),
+  );
+}
 ```
 
-The return URL must exactly match the integration redirect allowlist and use
-HTTPS without credentials or fragment. Configure the URL as a verified Android
-App Link and iOS Universal Link in the host app/domain. The SDK subscribes to
-app_links while its route is open, opens the browser and validates the exact
-return URI. It never spoofs a browser Origin. The hosted widget exchanges the
-ticket and executes the existing web flow. Flutter's embedded browser is not
-used and no website owned by the merchant needs to host the widget.
+Hosted mode opens the LuliVerify website in the external browser. Your application
+does not need an iframe, embedded WebView, or website to host the widget.
 
-The checked-in example currently has no App Link intent filter or iOS Associated
-Domains entitlement. Its return-URL input does not configure either operating
-system. A backend-registered HTTPS URL alone will still open in the browser
-unless the app/domain association is installed and verified. The previous
-hosted-launch smoke test covered opening the website, not returning to the app.
-The SDK event-listener regression separately verifies exact-match return delivery,
-wrong-link rejection, route dismissal and the advisory hostedReturned result.
+### Configure the return link
 
-Android: configure an autoVerify VIEW intent filter for your HTTPS host/path
-and serve `.well-known/assetlinks.json` with the real package/signing identity.
-iOS: add `applinks:your-app.example` to Associated Domains and serve the Apple
-app-site-association file with the real team/bundle identity. If your application
-uses app_links, follow its platform setup to avoid Flutter's default deep-link
-handler consuming the same links. These identities cannot be generated by this
-SDK. Do not copy placeholder domains/identifiers into a shipping application.
+Use an HTTPS address on a domain you control. Register its exact URL in your
+LuliVerify integration, then associate the address with your installed app:
 
-A cold-start return after the OS killed the process cannot recover the SDK's
-memory-only flow. Restore your own app navigation and check results through
-your trusted backend/dashboard. A return link never restores tokens or grants
-verification approval. Repeated/foreign return links are ignored. If app-link
-setup is missing, the customer can switch back and leave the SDK screen; that
-reports dismissed, never completed. The advanced LuliVerifyHostedLaunch adapter
-remains available if your app already routes incoming links itself.
+- **Android:** add a verified VIEW intent filter and publish
+  `.well-known/assetlinks.json` for the actual package/signing identity.
+- **iOS:** enable Associated Domains with `applinks:your-domain` and publish
+  `apple-app-site-association` for the actual Apple team/bundle identity and paths.
+
+The example’s return-URL field provides launch configuration. Configure the
+platform and domain associations for your own app before using that field.
+Registration with LuliVerify and OS domain verification are separate requirements.
+See the [Android](../README.md#android-setup) and [iOS](../README.md#ios-setup)
+configuration examples and the app_links platform setup instructions.
+
+### Handle the return
+
+The SDK listens for an exact matching URI while its route remains open. Matching
+includes the full registered URL and query string. Repeated or unrelated links
+are ignored. An accepted return closes the SDK route and resolves its Future
+with `LuliVerifyResultStatus.hostedReturned`.
+
+The Future belongs to the application process that started it. If your app is
+restarted, restore its normal navigation and retrieve the session result through
+your authorized LuliVerify integration. A return link reports navigation; use the
+LuliVerify result when making application access decisions.
 
 ## Results and closing
 
-The Future returns LuliVerifyResult with status, optional sessionId, testOnly
-and sanitized errorCode. Native statuses reflect the last backend session:
-completed, failed, cancelled or expired. `hostedReturned` means the exact return
-link was received, not that the hosted flow passed. `dismissed` means local UI
-was closed without confirmed remote cancellation; `error` means launch failed.
+The result includes a status, optional session ID, and optional sanitized error
+code. See the [result table](../README.md#results-callbacks-and-cancellation).
 
-Native leave asks for confirmation. When possible it cancels the remote session;
-if cancellation cannot be confirmed, it reports dismissed. Disposing aborts
-local requests and releases controllers. Tickets/tokens are memory-only and
-must not be logged, persisted or included in analytics. Public keys/session IDs
-cannot retrieve private account data or reissue access to an existing session.
+- Native results reflect the session’s completed, failed, cancelled, or expired
+  status.
+- `hostedReturned` reports receipt of the registered return link.
+- `dismissed` indicates local closure without confirmed remote cancellation.
+- `error` indicates a launch/link error reported when the route closes.
 
-Callbacks are advisory and cannot authorize financial/sensitive access. A trusted
-merchant server can obtain authoritative results using the private merchant API
-or receive signed webhooks. Keep those private credentials off the phone.
+Leaving a native session asks for confirmation and requests cancellation when the
+session is ready. The returned state distinguishes confirmed cancellation from
+local dismissal. Leaving the hosted SDK screen does not cancel the browser session.
 
-## Optional server-created sessions
+Treat callbacks as navigation/session notifications. Retrieve the verification
+result from LuliVerify before granting sensitive access in your application.
 
-Existing integrations can still use `POST /merchant/mobile-workflow-sessions`
-with X-Merchant-Key and `{releaseId,customerReference,idempotencyKey}` from a
-trusted server. Authenticate the customer and verify session ownership there.
-The grant can be passed to LuliVerifyNativeGrant/NativeSessionTransport and a
-host-owned LuliVerifySessionController/SessionScreen for advanced composition.
-The host owns disposal when using those low-level APIs directly.
+## Evidence, forms, and permissions
 
-Server-authorized resume uses `POST /merchant/mobile-workflow-sessions/:id/resume`
-with `{}`, same integration key, and workflow resume enabled. It preserves expiry
-and position; exchange rotates prior credentials. There is intentionally no
-publishable-key + session-ID resume endpoint. Native/widget tickets remain
-separate. Native HTTP must omit Origin, cookies, dashboard JWT and private keys.
+LuliVerify supplies field definitions, upload roles, accepted file types, limits,
+and available recovery actions. The SDK supports PDF/PNG/JPEG selection according
+to the session requirements and a guided front-camera view with review/retake.
+Camera capture records no audio.
 
-## Evidence and permissions
+The SDK handles evidence references between workflow steps. Follow the available
+recovery action when evidence must be recaptured. Selection labels are for display;
+original field/option values are submitted unchanged.
 
-The backend supplies fields/options/validation, upload slots, file types/limits,
-role references and available actions. Earlier evidence is resolved by the
-backend; the client never picks another step's source/target asset IDs. Recovery
-follows the server action flag. Unsupported provider/test-runner requirements
-are shown explicitly rather than inventing success.
+Upload feedback separates preparing media, transmitting it, and awaiting
+LuliVerify confirmation. Completion of byte transfer is not the final upload
+response. The SDK clears owned upload buffers after use and cleans temporary
+camera files on a best-effort basis.
 
-The view offers PDF/PNG/JPEG file selection and native photo capture according
-to that contract. Camera capture is not liveness. Test liveness keeps its testOnly flag in session/result metadata and
-preserves workflow-authored scenarios and otherwise uses a synthetic
-success scenario. Production liveness is blocked. No customer outcome selector
-is exposed. OTP delivery also requires a real provider before production use.
+Android requires INTERNET permission and API 24+. iOS requires 13.0+ and camera/
+photo-library usage descriptions. Refer to the platform sections in the README
+for the exact configuration. Include camera, file selection, permissions,
+interruption/recovery, and verified return links in physical-device validation.
 
-iOS Info.plist:
+## Advanced lifecycle APIs
 
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Capture documents and photos for verification.</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>Select documents and photos for verification.</string>
-```
+Prefer `LuliVerify.launch` for normal integration. For a custom presenter:
 
-Android requires INTERNET permission. No broad storage permission is needed.
-Permissions are requested when used; denied capture never becomes a passed check.
-On Android startup, advanced integrations may retrieve a lost picker capture
-using LuliVerifyEvidencePicker.retrieveLostCapture(). Re-confirm user/session/
-step/role before attaching it; never auto-attach it to a different session.
-The built-in view clears upload buffers and best-effort deletes camera cache.
+- A session controller owns one session transport and disposes it with the controller.
+- A session screen displays a supplied controller but does not dispose host-owned
+  controllers itself.
+- Coordinate evidence/autosave operations with other session mutations, then refresh
+  the controller before the next submission.
+- Refresh after an uncertain mutation rather than blindly replaying it.
+- A low-level hosted launcher checks forwarded links; it does not install OS
+  domain associations or listen for links on its own.
+- Recovered Android picker media must be reconfirmed for the current session and
+  role before attachment.
 
-Transport evidence/autosave operations must be serialized with session mutations
-and adopted through a controller refresh. Built-in uploads show preparation, streamed request-body progress and a final
-server-confirmation state. Sending all bytes does not mark an upload as accepted.
-The selfie camera provides a dotted framing guide, front-camera capture, review
-and retake; the guide does not detect a face or prove liveness. Camera resources
-are released on interruption and reopened on return. Device permission/camera/activity-loss and
-verified app-link behavior require physical-device testing before release.
-
-
-Presentation metadata: use backend `presentation.title`/`description` and
-`uploads.slotOptions`/`documentTypeOptions` labels. Values remain unchanged.
-The SDK supports older servers with readable fallback labels. SDK-owned
-screens include Powered by LuliVerify; merchant displayName remains configurable.
-Android requires API 24 or higher and iOS 13 or higher for the camera dependency.
-The selfie camera records no audio and does not request microphone permission.
-
-Customer-facing SDK screens do not display test/simulation badges or warnings.
-This presentation choice does not change testOnly metadata, provider requirements,
-production-liveness blocking or final-outcome semantics. The selfie screen uses
-an inline close control on the white surface, without a separate app bar.
+The Dart API comments document parameters, return values, ownership, and failure
+behaviour for each public class/method. Generate the reference with `dart doc`.

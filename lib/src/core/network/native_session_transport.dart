@@ -102,7 +102,7 @@ final class LuliVerifyNativeSessionTransport
   ///
   /// This method owns and closes [client], including on failure; when omitted it
   /// creates its own. Return a fresh client per call. Invalid arguments throw
-  /// [ArgumentError]; backend, expiry and network failures throw LuliVerifyException.
+  /// [ArgumentError]; LuliVerify, expiry and network failures throw LuliVerifyException.
   /// Do not automatically retry an ambiguous creation or consume a ticket twice.
   static Future<Map<String, Object?>> createLaunch({
     required LuliVerifyConfig config,
@@ -337,7 +337,7 @@ final class LuliVerifyNativeSessionTransport
   Future<LuliVerifySession> read() async =>
       _snapshot(await _json('GET', 'workflow-sessions/$sessionId', null));
   @override
-  /// Submits a backend step envelope and updates the latest snapshot.
+  /// Submits a LuliVerify step envelope and updates the latest snapshot.
   ///
   /// Use the controller to construct revision/idempotency/consent fields safely.
   /// Throws LuliVerifyException on failure; do not blindly replay an uncertain call.
@@ -346,16 +346,16 @@ final class LuliVerifyNativeSessionTransport
         await _json('POST', 'workflow-sessions/$sessionId/steps', body),
       );
   @override
-  /// Requests remote session cancellation and adopts its backend snapshot.
+  /// Requests remote session cancellation and adopts its LuliVerify snapshot.
   ///
   /// Only the returned status confirms cancellation. Local disposal is separate.
   Future<LuliVerifySession> cancel() async =>
       _snapshot(await _json('DELETE', 'workflow-sessions/$sessionId', null));
 
-  /// Requests backend-approved recovery at [revision] for expired/missing evidence.
+  /// Requests LuliVerify-approved recovery at [revision] for expired/missing evidence.
   ///
   /// Follow the current action flag and refresh the controller after success. The
-  /// backend resolves which earlier capture must be repeated; do not choose arbitrary
+  /// LuliVerify resolves which earlier capture must be repeated; do not choose arbitrary
   /// source asset IDs. Throws LuliVerifyException on rejected or uncertain recovery.
   Future<LuliVerifySession> recoverEvidence(int revision) async => _snapshot(
     await _json('POST', 'workflow-sessions/$sessionId/evidence/recover', {
@@ -380,9 +380,9 @@ final class LuliVerifyNativeSessionTransport
 
   /// Saves partial scalar answers for [stepId] at the supplied [revision].
   ///
-  /// [input] uses backend field keys. Autosave does not complete the step. Serialise
+  /// [input] uses LuliVerify field keys. Autosave does not complete the step. Serialise
   /// with other session operations, then refresh the controller before submitting.
-  /// Throws LuliVerifyException for backend, contract or network failures.
+  /// Throws LuliVerifyException for LuliVerify, contract or network failures.
   Future<LuliVerifySession> saveInput({
     required int revision,
     required String stepId,
@@ -395,11 +395,11 @@ final class LuliVerifyNativeSessionTransport
     }),
   );
 
-  /// Uploads file bytes for the current backend [contract] and returns an asset ID.
+  /// Uploads file bytes for the current LuliVerify [contract] and returns an asset ID.
   ///
-  /// [slot] and optional [documentType] are backend values, not display labels.
+  /// [slot] and optional [documentType] are LuliVerify values, not display labels.
   /// [mimeType], [bytes] size and document type must satisfy the current contract.
-  /// The transport rejects stale/unavailable contracts before upload; the backend
+  /// The transport rejects stale/unavailable contracts before upload; LuliVerify
   /// remains authoritative about file/role eligibility and ownership.
   ///
   /// [onProgress] reports multipart request-body bytes sent/total, including overhead.

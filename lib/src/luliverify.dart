@@ -18,18 +18,18 @@ import 'presentation/native/session_screen.dart';
 /// Reason an SDK-owned verification route returned to its caller.
 ///
 /// Native session statuses and hosted navigation statuses are distinct. None is
-/// merchant-authoritative approval; use trusted backend results for decisions.
+/// merchant-authoritative approval; use trusted LuliVerify results for decisions.
 enum LuliVerifyResultStatus {
-  /// The native backend session completed; this is not an authorization decision.
+  /// The native LuliVerify session completed; this is not an authorization decision.
   completed,
 
-  /// The native backend session ended with a failed status.
+  /// The native LuliVerify session ended with a failed status.
   failed,
 
-  /// Cancellation of the native backend session was confirmed.
+  /// Cancellation of the native LuliVerify session was confirmed.
   cancelled,
 
-  /// The native session expired according to the backend or local expiry clock.
+  /// The native session expired according to LuliVerify or the local expiry clock.
   expired,
 
   /// The local route closed without confirmed remote cancellation/completion.
@@ -54,7 +54,7 @@ final class LuliVerifyResult {
   /// Creates an immutable session/navigation result.
   ///
   /// Use [status] to distinguish confirmed native states from hosted return or
-  /// local dismissal. The constructor itself does not validate a backend outcome.
+  /// local dismissal. The constructor itself does not validate a LuliVerify outcome.
   const LuliVerifyResult({
     required this.status,
     this.sessionId,
@@ -65,14 +65,14 @@ final class LuliVerifyResult {
   /// Reason the SDK returned control to the host application.
   final LuliVerifyResultStatus status;
 
-  /// Backend session identifier, or null if no session was obtained.
+  /// LuliVerify session identifier, or null if no session was obtained.
   ///
   /// An identifier is not a credential and cannot restore session access.
   final String? sessionId;
 
-  /// Backend test-mode flag, or null when launch metadata was unavailable.
+  /// Session environment flag, or null when launch metadata was unavailable.
   ///
-  /// Customer-facing screens omit test notices; this flag is still retained.
+  /// Consult the integration’s environment settings when interpreting this metadata.
   final bool? testOnly;
 
   /// Sanitized SDK error category when available; excludes provider payloads.
@@ -97,10 +97,10 @@ abstract final class LuliVerify {
   /// 1–150 characters when provided, and is correlation rather than authentication.
   ///
   /// [mode] defaults to native UI. Hosted mode opens the external browser and
-  /// requires [returnUrl]: an exact backend-registered HTTPS App/Universal Link.
+  /// requires [returnUrl]: an exact LuliVerify-registered HTTPS App/Universal Link.
   /// The host must configure OS/domain associations. Native mode must omit it.
   /// A matching link resolves as [LuliVerifyResultStatus.hostedReturned], not
-  /// completed. Cold-start restoration after process death is not implemented.
+  /// completed. The return listener belongs to the active SDK route and application process.
   ///
   /// [apiBaseUrl] defaults to https://luli-api.luliverify.io. [widgetOrigin] defaults
   /// to https://verify.luliverify.io and validates hosted launch origin.

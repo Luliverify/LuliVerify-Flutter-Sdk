@@ -2,7 +2,7 @@
 ///
 /// A mode is explicit; unsupported native checks do not fall back to hosted web.
 enum LuliVerifyPresentation {
-  /// Render backend-driven fields and evidence using native Flutter screens.
+  /// Render LuliVerify-driven fields and evidence using native Flutter screens.
   nativeUi,
 
   /// Open the hosted website externally; verified app-return links are required.

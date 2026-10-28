@@ -1,4 +1,5 @@
-# Native Presentation
+# Native presentation
 
-Render backend-defined fields and options with Flutter widgets. No duplicated
-provider rules or user-selected verification outcomes in production.
+Render the fields and options supplied by LuliVerify using Flutter widgets.
+Keep labels and submitted values distinct and follow the available session actions.
+The SDK manages forms, consent, capture, uploads, progression, and closing.

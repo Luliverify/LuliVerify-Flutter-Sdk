@@ -4,15 +4,15 @@ import '../../core/contracts/input_contract.dart';
 import '../../core/contracts/json_contract.dart';
 import '../design/luli_components.dart';
 
-/// Backend-driven scalar input form for advanced native presenters.
+/// LuliVerify-driven scalar input form for advanced native presenters.
 ///
 /// Supports text, email, date, finite numbers and selects. Evidence and consent
 /// are managed by the surrounding session screen. Defaults/options/labels come
-/// from the contract; the backend remains the final validation authority.
+/// from the contract; LuliVerify remains the final validation authority.
 class LuliVerifyContractForm extends StatefulWidget {
   /// Creates a scalar form for [contract] and an awaited [onSubmit] handler.
   ///
-  /// The handler must preserve backend field keys and surface session errors
+  /// The handler must preserve LuliVerify field keys and surface session errors
   /// without logging personal input. [enabled] disables interaction;
   /// [continueLabel] supplies customer-facing action copy.
   const LuliVerifyContractForm({
@@ -33,7 +33,7 @@ class LuliVerifyContractForm extends StatefulWidget {
   /// Whether interaction/submission is permitted by the surrounding session flow.
   final bool enabled;
 
-  /// Button copy, normally supplied by backend branding.
+  /// Button copy, normally supplied by LuliVerify branding.
   final String continueLabel;
   @override
   State<LuliVerifyContractForm> createState() => _ContractFormState();
@@ -46,7 +46,7 @@ class _ContractFormState extends State<LuliVerifyContractForm> {
   bool _busy = false;
   String? _error;
 
-  /// Checks a scalar against supported backend metadata; returns local error copy.
+  /// Checks a scalar against supported LuliVerify metadata; returns local error copy.
   String? _validate(LuliVerifyInputField field, String? text) {
     final value = text ?? '';
     if (value.isEmpty) {
