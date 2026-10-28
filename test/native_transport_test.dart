@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -27,6 +28,50 @@ final config = LuliVerifyConfig(
 );
 
 void main() {
+  test(
+    'multipart progress reports streamed bytes and preserves abort support',
+    () async {
+      final json = jsonDecode(
+        File('test/fixtures/liveness_session.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      json['data']['sessionToken'] = 't' * 43;
+      final progress = <(int, int)>[];
+      final transport = await LuliVerifyNativeSessionTransport.connect(
+        config: config,
+        grant: grant(),
+        client: MockClient((request) async {
+          if (request.url.path.endsWith('/files')) {
+            expect(progress, isNotEmpty);
+            expect(progress.last.$1, progress.last.$2);
+            expect(request.bodyBytes.length, progress.last.$2);
+            return http.Response(
+              jsonEncode({
+                'statusCode': 200,
+                'data': {'id': '670100000000000000000099'},
+              }),
+              200,
+            );
+          }
+          return http.Response(jsonEncode(json), 200);
+        }),
+      );
+      addTearDown(transport.dispose);
+      final contract = transport.initialSession.contracts.values.firstWhere(
+        (c) => c.toolType == 'liveness',
+      );
+      await transport.upload(
+        contract: contract,
+        slot: 'selfie',
+        bytes: Uint8List.fromList([0xff, 0xd8, 0xff, 0]),
+        mimeType: 'image/jpeg',
+        onProgress: (sent, total) => progress.add((sent, total)),
+      );
+      for (var i = 1; i < progress.length; i++) {
+        expect(progress[i].$1, greaterThanOrEqualTo(progress[i - 1].$1));
+        expect(progress[i].$2, progress.first.$2);
+      }
+    },
+  );
   test('exchanges once, sends only native session credentials and strips public tokens', () async {
     final seen = <http.Request>[];
     final transport = await LuliVerifyNativeSessionTransport.connect(

@@ -7,6 +7,7 @@ class ExampleApp extends StatelessWidget {
   const ExampleApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
     title: 'LuliVerify',
     theme: LuliVerifyDesign.theme(),
     home: const LaunchPage(),

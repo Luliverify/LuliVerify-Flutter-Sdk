@@ -10,7 +10,7 @@ import 'package:luliverify_flutter/luliverify_flutter.dart';
 void main() {
   for (final testOnly in [true, false]) {
     testWidgets(
-      'liveness view ${testOnly ? 'labels simulation' : 'blocks production dummy'}',
+      'liveness view ${testOnly ? 'renders customer instructions' : 'blocks production dummy'}',
       (tester) async {
         final json = jsonDecode(
           File('test/fixtures/liveness_session.json').readAsStringSync(),
@@ -46,8 +46,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(
           find.textContaining('Simulated liveness - test only'),
-          testOnly ? findsOneWidget : findsNothing,
+          findsNothing,
         );
+        expect(find.text('Test session'), findsNothing);
+        expect(controller.session!.testOnly, testOnly);
         if (!testOnly) {
           expect(
             find.textContaining('provider that is not available'),

@@ -10,6 +10,9 @@ import '../../features/session/session_controller.dart';
 import '../../features/session/workflow_session.dart';
 import '../../platform/evidence_picker.dart';
 import 'contract_form.dart';
+import 'selfie_capture_screen.dart';
+import '../design/presentation_labels.dart';
+import '../design/session_states.dart';
 import '../design/luli_components.dart';
 
 /// The host owns/disposes controller and transport. Completion is advisory.
@@ -39,6 +42,8 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
   final List<String> _assets = [];
   bool _consent = false;
   bool _uploading = false;
+  double? _uploadProgress;
+  bool _sendingFile = false;
   String? _error;
   String? _notified;
   String? _attemptStamp;
@@ -195,62 +200,12 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                 final expired =
                     controller.phase == LuliVerifySessionPhase.expired;
                 final completed = session.status.name == 'completed';
-                return Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Spacer(),
-                      Icon(
-                        completed
-                            ? LucideIcons.circleCheck
-                            : expired
-                            ? LucideIcons.clock
-                            : LucideIcons.circleAlert,
-                        size: 64,
-                        color: LuliVerifyDesign.primary,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        expired
-                            ? 'Session expired'
-                            : completed
-                            ? 'Verification submitted'
-                            : session.status.name == 'cancelled'
-                            ? 'Verification cancelled'
-                            : 'Verification could not be completed',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w600,
-                          height: 1.15,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        completed
-                            ? 'Your verification steps are complete. The business will confirm the final outcome.'
-                            : 'Return to the app to start again or get help.',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: LuliVerifyDesign.muted,
-                        ),
-                      ),
-                      if (session.testOnly)
-                        const LuliNotice(
-                          'Test session. This is not a production verification.',
-                        ),
-                      const Spacer(),
-                      LuliButton(
-                        label: 'Return to app',
-                        onPressed:
-                            widget.onClose ??
-                            () => Navigator.of(context).maybePop(),
-                      ),
-                    ],
-                  ),
+                return LuliTerminalView(
+                  expired: expired,
+                  completed: completed,
+                  cancelled: session.status.name == 'cancelled',
+                  onClose:
+                      widget.onClose ?? () => Navigator.of(context).maybePop(),
                 );
               }
               final stepId =
@@ -316,6 +271,11 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                       as String? ??
                   contract.toolType;
               final description =
+                  jsonObject(
+                        contract.raw['presentation'] ??
+                            const <String, Object?>{},
+                      )['description']
+                      as String? ??
                   steps.firstWhere(
                         (step) => step['id'] == stepId,
                       )['description']
@@ -346,9 +306,17 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                         ),
                         const SizedBox(height: 28),
                       ],
-                      if (session.testOnly) const LuliNotice('Test session'),
                       Text(
-                        title,
+                        (jsonObject(
+                                  contract.raw['presentation'] ??
+                                      const <String, Object?>{},
+                                )['title']
+                                as String?) ??
+                            (title == contract.toolType ||
+                                    title ==
+                                        contract.toolType.replaceAll('_', ' ')
+                                ? presentationLabel(title)
+                                : title),
                         style: const TextStyle(
                           fontSize: 30,
                           height: 1.15,
@@ -368,16 +336,6 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                             ),
                           ),
                         ),
-                      if (simulatedLiveness)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Semantics(
-                            liveRegion: true,
-                            child: Text(
-                              'Simulated liveness - test only. This does not verify that a real person is present.',
-                            ),
-                          ),
-                        ),
                       if (lastAttempt != null &&
                           lastAttempt['outcome'] != 'passed')
                         Padding(
@@ -392,6 +350,19 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                           ),
                         ),
                       const SizedBox(height: 24),
+                      if (contract.toolType == 'welcome')
+                        LuliWelcomeIntro(
+                          documents: session.contracts.values.any(
+                            (c) => [
+                              'document_upload',
+                              'other_document',
+                            ].contains(c.toolType),
+                          ),
+                          selfie: session.contracts.values.any(
+                            (c) =>
+                                ['liveness', 'nin_face'].contains(c.toolType),
+                          ),
+                        ),
                       if (steps.length > 1)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 20),
@@ -418,7 +389,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                         const Padding(
                           padding: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'This test workflow needs a developer-configured outcome before customers can continue.',
+                            'This verification step isn’t ready yet. Contact the business for help.',
                           ),
                         ),
                       if (face != null)
@@ -444,7 +415,10 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                             initialValue: _slot,
                             label: 'Document side',
                             enabled: !_uploading && controller.canSubmit,
-                            options: {for (final slot in slots) slot: slot},
+                            options: presentationOptions(
+                              slots,
+                              uploads['slotOptions'],
+                            ),
                             onChanged: _uploading
                                 ? null
                                 : (value) => setState(() => _slot = value),
@@ -457,7 +431,10 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                               initialValue: _documentType,
                               label: 'Document type',
                               enabled: !_uploading && controller.canSubmit,
-                              options: {for (final type in types) type: type},
+                              options: presentationOptions(
+                                types,
+                                uploads['documentTypeOptions'],
+                              ),
                               onChanged: _uploading
                                   ? null
                                   : (value) =>
@@ -487,7 +464,40 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                             ),
                           ],
                         ),
-                        if (_uploading) const LinearProgressIndicator(),
+                        if (_uploading)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    !_sendingFile
+                                        ? 'Preparing your file…'
+                                        : _uploadProgress == 1
+                                        ? 'Finishing upload…'
+                                        : 'Uploading your file…',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value:
+                                          _sendingFile && _uploadProgress != 1
+                                          ? _uploadProgress
+                                          : null,
+                                      minHeight: 5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         if (_assets.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -677,6 +687,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
                             : controller.cancel,
                         child: const Text('Cancel verification'),
                       ),
+                      const LuliPoweredBy(),
                     ],
                   ),
                 ),
@@ -707,22 +718,50 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     }
     setState(() {
       _uploading = true;
+      _sendingFile = false;
+      _uploadProgress = null;
       _error = null;
     });
     try {
       final picked = await _picker.pick(
         contract: contract,
         camera: camera,
+        capture: camera && _slot == 'selfie'
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => Theme(
+                    data: LuliVerifyDesign.fromBranding(
+                      jsonObject(session.raw['branding']),
+                    ),
+                    child: const LuliSelfieCaptureScreen(),
+                  ),
+                ),
+              )
+            : null,
         testOnlyLiveness: session.testOnly && contract.toolType == 'liveness',
       );
-      if (picked == null || !mounted) return;
+      if (picked == null) return;
+      if (!mounted) {
+        picked.bytes.fillRange(0, picked.bytes.length, 0);
+        return;
+      }
       try {
+        setState(() => _sendingFile = true);
         final id = await widget.transport.upload(
           contract: contract,
           slot: _slot!,
           bytes: picked.bytes,
           mimeType: picked.mimeType,
           documentType: _documentType,
+          onProgress: (sent, total) {
+            if (mounted) {
+              setState(
+                () => _uploadProgress = total == 0
+                    ? null
+                    : (sent / total).clamp(0, 1),
+              );
+            }
+          },
         );
         if (mounted) setState(() => _assets.add(id));
       } finally {

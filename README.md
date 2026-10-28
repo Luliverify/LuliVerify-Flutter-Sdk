@@ -66,8 +66,9 @@ flutter run
 
 The example accepts a publishable key and release ID and invokes the single-call
 launcher. Matching backend additions must be deployed first. Real-provider
-liveness and OTP delivery are not implemented. Liveness has an explicitly labeled
-test-only simulation; production liveness remains blocked.
+liveness and OTP delivery are not implemented. Liveness uses backend-marked test-only simulation; production liveness remains
+blocked. Test flags stay in API/results metadata, while customer screens use
+ordinary capture instructions.
 Package names/identifiers are provisional and publication is disabled.
 See [architecture](docs/ARCHITECTURE.md) and [roadmap](docs/ROADMAP.md).
 

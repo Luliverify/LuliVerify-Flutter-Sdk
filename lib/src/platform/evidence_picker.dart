@@ -7,8 +7,31 @@ import 'package:image_picker/image_picker.dart';
 import '../core/contracts/input_contract.dart';
 import '../core/errors/luliverify_exception.dart';
 
+/// iOS requires UTIs; extensions alone are rejected before opening its picker.
+/// Every platform filter must be derived from the same server MIME policy.
+XTypeGroup evidenceTypeGroup(Iterable<String> acceptedMimeTypes) {
+  final types = acceptedMimeTypes.toSet();
+  return XTypeGroup(
+    label: 'Verification document',
+    extensions: [
+      if (types.contains('application/pdf')) 'pdf',
+      if (types.contains('image/png')) 'png',
+      if (types.contains('image/jpeg')) ...['jpg', 'jpeg'],
+    ],
+    uniformTypeIdentifiers: [
+      if (types.contains('application/pdf')) 'com.adobe.pdf',
+      if (types.contains('image/png')) 'public.png',
+      if (types.contains('image/jpeg')) 'public.jpeg',
+    ],
+    mimeTypes: types.toList(),
+  );
+}
+
 final class LuliVerifyPickedEvidence {
-  const LuliVerifyPickedEvidence(this.bytes, this.mimeType);
+  // Android file_selector may return an unmodifiable platform buffer. Own a
+  // mutable copy so post-upload cleanup cannot turn success into a failure.
+  LuliVerifyPickedEvidence(Uint8List bytes, this.mimeType)
+    : bytes = Uint8List.fromList(bytes);
   final Uint8List bytes;
   final String mimeType;
 }
@@ -20,6 +43,7 @@ class LuliVerifyEvidencePicker {
     required LuliVerifyInputContract contract,
     bool camera = false,
     bool testOnlyLiveness = false,
+    Future<XFile?> Function()? capture,
   }) async {
     if (contract.toolType == 'liveness' && !testOnlyLiveness) {
       throw const LuliVerifyException(
@@ -37,24 +61,15 @@ class LuliVerifyEvidencePicker {
     XFile? ownedCameraFile;
     try {
       final XFile? file = camera
-          ? await _images.pickImage(
-              source: ImageSource.camera,
-              requestFullMetadata: false,
-            )
+          ? capture != null
+                ? await capture()
+                : await _images.pickImage(
+                    source: ImageSource.camera,
+                    requestFullMetadata: false,
+                  )
           : await openFile(
               acceptedTypeGroups: [
-                XTypeGroup(
-                  label: 'Verification document',
-                  extensions: [
-                    if ((policy['mimeTypes'] as List).contains(
-                      'application/pdf',
-                    ))
-                      'pdf',
-                    'png',
-                    'jpg',
-                    'jpeg',
-                  ],
-                ),
+                evidenceTypeGroup((policy['mimeTypes'] as List).cast<String>()),
               ],
             );
       if (file == null) return null;

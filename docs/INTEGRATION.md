@@ -121,8 +121,8 @@ follows the server action flag. Unsupported provider/test-runner requirements
 are shown explicitly rather than inventing success.
 
 The view offers PDF/PNG/JPEG file selection and native photo capture according
-to that contract. Camera capture is not liveness. Test liveness is explicitly
-labeled, preserves workflow-authored scenarios and otherwise uses a synthetic
+to that contract. Camera capture is not liveness. Test liveness keeps its testOnly flag in session/result metadata and
+preserves workflow-authored scenarios and otherwise uses a synthetic
 success scenario. Production liveness is blocked. No customer outcome selector
 is exposed. OTP delivery also requires a real provider before production use.
 
@@ -143,6 +143,22 @@ step/role before attaching it; never auto-attach it to a different session.
 The built-in view clears upload buffers and best-effort deletes camera cache.
 
 Transport evidence/autosave operations must be serialized with session mutations
-and adopted through a controller refresh. Built-in uploads show indeterminate
-progress, not measured byte progress. Device permission/camera/activity-loss and
+and adopted through a controller refresh. Built-in uploads show preparation, streamed request-body progress and a final
+server-confirmation state. Sending all bytes does not mark an upload as accepted.
+The selfie camera provides a dotted framing guide, front-camera capture, review
+and retake; the guide does not detect a face or prove liveness. Camera resources
+are released on interruption and reopened on return. Device permission/camera/activity-loss and
 verified app-link behavior require physical-device testing before release.
+
+
+Presentation metadata: use backend `presentation.title`/`description` and
+`uploads.slotOptions`/`documentTypeOptions` labels. Values remain unchanged.
+The SDK supports older servers with readable fallback labels. SDK-owned
+screens include Powered by LuliVerify; merchant displayName remains configurable.
+Android requires API 24 or higher and iOS 13 or higher for the camera dependency.
+The selfie camera records no audio and does not request microphone permission.
+
+Customer-facing SDK screens do not display test/simulation badges or warnings.
+This presentation choice does not change testOnly metadata, provider requirements,
+production-liveness blocking or final-outcome semantics. The selfie screen uses
+an inline close control on the white surface, without a separate app bar.

@@ -11,6 +11,7 @@ import 'core/errors/luliverify_exception.dart';
 import 'core/network/native_session_transport.dart';
 import 'features/session/session_controller.dart';
 import 'presentation/design/luli_components.dart';
+import 'presentation/design/session_states.dart';
 import 'presentation/hosted/hosted_launch.dart';
 import 'presentation/native/session_screen.dart';
 
@@ -370,6 +371,7 @@ class _LaunchState extends State<_LaunchScreen> {
                         ),
                       ),
                     const Spacer(),
+                    const LuliPoweredBy(),
                     if (_errorCode != null || _hosted != null)
                       LuliButton(label: 'Return to app', onPressed: _close),
                   ],

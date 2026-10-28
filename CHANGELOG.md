@@ -7,6 +7,16 @@
 
 ## Unreleased
 
+- Normalize backend display labels without changing submitted values.
+- Redesign welcome and terminal screens, add Powered by LuliVerify branding.
+- Show preparation, streamed upload progress and server-confirmation status.
+- Add front-camera selfie framing with a dotted guide, review and retake.
+- Release camera resources on interruption and recover on return; preserve
+  backend test-only metadata. The guide is not a face detector.
+
+- Own a mutable evidence buffer before cleanup; Android picker buffers may be
+  read-only and must not turn a successful upload into an error banner.
+
 - Add one-call publishable-key native/hosted launching with SDK-owned navigation.
 - Add custom brand controls, Geist font and Lucide outline icons.
 - Register validated app-return handling during hosted sessions.
@@ -20,3 +30,8 @@
 - Add explicit hosted browser launch and exact app-return matching.
 - Add native grant support and a publishable-key example; configure permissions.
 - Liveness/OTP provider integration and physical-device validation remain gates.
+
+- Remove customer-visible test/simulation copy; retain test flags and production guards.
+- Use an inline close control on the selfie screen without a separate app bar.
+
+- Fix iOS document selection with server-derived uniform type identifiers; retain matching Android extension/MIME filters.

@@ -314,6 +314,7 @@ final class LuliVerifyNativeSessionTransport
     required Uint8List bytes,
     required String mimeType,
     String? documentType,
+    void Function(int sent, int total)? onProgress,
   }) async {
     final latest = _last;
     if (latest == null ||
@@ -346,10 +347,11 @@ final class LuliVerifyNativeSessionTransport
       );
     }
     final response = await _send((abort) {
-      final request = http.AbortableMultipartRequest(
+      final request = _ProgressMultipartRequest(
         'POST',
         _url('workflow-sessions/$sessionId/files'),
         abortTrigger: abort,
+        onProgress: onProgress,
       )..followRedirects = false;
       request.headers['X-Session-Token'] = _token ?? '';
       request.fields.addAll({
@@ -388,5 +390,31 @@ final class LuliVerifyNativeSessionTransport
       if (!abort.isCompleted) abort.complete();
     }
     _client.close();
+  }
+}
+
+class _ProgressMultipartRequest extends http.MultipartRequest
+    with http.Abortable {
+  _ProgressMultipartRequest(
+    super.method,
+    super.url, {
+    this.abortTrigger,
+    this.onProgress,
+  });
+  @override
+  final Future<void>? abortTrigger;
+  final void Function(int sent, int total)? onProgress;
+  @override
+  http.ByteStream finalize() {
+    final stream = super.finalize();
+    final total = contentLength;
+    var sent = 0;
+    return http.ByteStream(
+      stream.map((chunk) {
+        sent += chunk.length;
+        onProgress?.call(sent, total);
+        return chunk;
+      }),
+    );
   }
 }

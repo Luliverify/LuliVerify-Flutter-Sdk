@@ -57,9 +57,10 @@ grant rather than ticket replay.
 
 - Deploy matching backend additions before testing real native launches.
 - Provider-native liveness and OTP delivery remain unintegrated. Production
-  liveness blocks; backend-marked test sessions have an explicitly labeled dummy
+  liveness blocks; backend-marked test sessions have a dummy
   path that uploads a selfie and uses a synthetic scenario. A photo does not
   establish human presence, and authored workflow test outcomes are preserved.
+  Test flags remain in session/result metadata; customer screens omit test notices.
 - Configure OS-verified universal/app links in each merchant app. The hosted
   adapter validates an exact registered return URL but does not own app routing.
 - Each merchant must authenticate its app user before issuing/resuming a grant

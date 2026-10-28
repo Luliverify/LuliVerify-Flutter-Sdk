@@ -19,7 +19,7 @@ KZr0UhszVsbris1jaDzCTc, frame 2106:11838. The desktop builder is not reproduced.
   backend font names are not downloaded or executed.
 - Scrollable narrow/large-text layouts and safe areas accommodate keyboards.
   Loading, disabled, failed, expired, terminal and recovery states are explicit.
-- Test liveness has a visible simulation warning. Completion describes session
+- Test/simulation metadata stays in the API; customer screens use ordinary capture instructions. Completion describes session
   submission, not an independently verified identity or merchant approval.
 
 ## Verification and provenance
