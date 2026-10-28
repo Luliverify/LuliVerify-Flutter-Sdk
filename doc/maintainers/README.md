@@ -2,7 +2,7 @@
 
 These records support implementation, validation, and release planning. They are
 separate from the SDK integration documentation in the package README,
-example README, and docs/INTEGRATION.md.
+example README, and doc/INTEGRATION.md.
 
 - [Architecture](ARCHITECTURE.md)
 - [Mobile contract audit](MOBILE_CONTRACT_AUDIT.md)

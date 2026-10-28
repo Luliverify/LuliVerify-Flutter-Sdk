@@ -58,6 +58,19 @@ and signing secrets out of the app and its configuration files.
 
 ## Install
 
+Install from pub.dev:
+
+```sh
+flutter pub add luliverify_flutter:^0.1.0-dev.1
+```
+
+Or add the dependency directly:
+
+```yaml
+dependencies:
+  luliverify_flutter: ^0.1.0-dev.1
+```
+
 For a local checkout:
 
 ```yaml
@@ -83,7 +96,7 @@ flutter pub get
 ```
 
 Keep Git credentials outside `pubspec.yaml`. Use the Git or local-path installation
-shown above.
+shown above when working from source.
 
 ## Native quick start
 
@@ -447,7 +460,7 @@ in your application’s release validation.
 
 ## Further reading
 
-- [Detailed integration guide](https://github.com/Luliverify/LuliVerify-Flutter-Sdk/blob/main/docs/INTEGRATION.md)
+- [Detailed integration guide](https://github.com/Luliverify/LuliVerify-Flutter-Sdk/blob/main/doc/INTEGRATION.md)
 - [Example application](https://github.com/Luliverify/LuliVerify-Flutter-Sdk/blob/main/example/README.md)
 - [Bundled Geist font licence](https://github.com/Luliverify/LuliVerify-Flutter-Sdk/blob/main/assets/fonts/OFL.txt)
 

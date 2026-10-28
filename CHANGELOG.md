@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-dev.1
 
 - Add one-call native and hosted launching with publishable-key configuration.
 - Add SDK-owned navigation, branded controls, Geist typography, and Lucide icons.
@@ -12,6 +12,4 @@
 - Add immutable session contracts and revision-aware controller APIs.
 - Expand setup, configuration, usage, troubleshooting, and IDE hover documentation.
 
-## 0.1.0-dev.1
-
-- Establish the Flutter package structure and Android/iOS example hosts.
+- Include Android/iOS example hosts and documented integration APIs.

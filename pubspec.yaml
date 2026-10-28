@@ -1,7 +1,15 @@
 name: luliverify_flutter
-description: LuliVerify mobile verification SDK foundation for Flutter.
+description: Flutter SDK for LuliVerify workflows with native verification screens, hosted browser flows, guided capture, and session callbacks.
 version: 0.1.0-dev.1
-publish_to: none
+repository: https://github.com/Luliverify/LuliVerify-Flutter-Sdk
+issue_tracker: https://github.com/Luliverify/LuliVerify-Flutter-Sdk/issues
+topics:
+  - identity-verification
+  - kyc
+  - onboarding
+platforms:
+  android:
+  ios:
 environment:
   sdk: '>=3.13.0 <4.0.0'
   flutter: '>=3.47.0'

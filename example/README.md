@@ -52,7 +52,7 @@ app, configure the address as an Android App Link and iOS Universal Link for you
 own domain and signed application. The field alone does not install those
 associations.
 
-See the [hosted integration guide](../docs/INTEGRATION.md#hosted-integration) and
+See the [hosted integration guide](../doc/INTEGRATION.md#hosted-integration) and
 [platform setup](../README.md#android-setup) for the required configuration.
 
 ## Handle the result
