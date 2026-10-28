@@ -7,8 +7,11 @@ import 'package:image_picker/image_picker.dart';
 import '../core/contracts/input_contract.dart';
 import '../core/errors/luliverify_exception.dart';
 
-/// iOS requires UTIs; extensions alone are rejected before opening its picker.
-/// Every platform filter must be derived from the same server MIME policy.
+/// Builds native file-picker filters from a supported backend MIME policy.
+///
+/// Supplies iOS UTIs plus matching extension/MIME filters for PDF, PNG and JPEG.
+/// Use backend-validated MIME values; a filter is selection assistance, not file
+/// verification. The picker also inspects file bytes before accepting evidence.
 XTypeGroup evidenceTypeGroup(Iterable<String> acceptedMimeTypes) {
   final types = acceptedMimeTypes.toSet();
   return XTypeGroup(
@@ -27,18 +30,48 @@ XTypeGroup evidenceTypeGroup(Iterable<String> acceptedMimeTypes) {
   );
 }
 
+/// Selected media held in an owned mutable buffer with its detected MIME type.
+///
+/// A selected file is evidence only, not a verification/liveness outcome. Keep
+/// bytes out of logs/analytics and clear the owned buffer after use.
 final class LuliVerifyPickedEvidence {
   // Android file_selector may return an unmodifiable platform buffer. Own a
   // mutable copy so post-upload cleanup cannot turn success into a failure.
+  /// Copies [bytes] so cleanup cannot mutate a caller’s or platform’s buffer.
+  ///
+  /// [mimeType] records the detected file type; this constructor does not validate
+  /// it. Prefer the validated evidence picker for user-selected media.
   LuliVerifyPickedEvidence(Uint8List bytes, this.mimeType)
     : bytes = Uint8List.fromList(bytes);
+
+  /// Owned mutable evidence bytes; clear after awaited upload/use has finished.
   final Uint8List bytes;
+
+  /// Detected MIME type, such as image/jpeg or application/pdf.
   final String mimeType;
 }
 
-/// Native image capture is NOT liveness. Callers must not use it as such.
+/// Native file/camera adapter constrained by the current upload contract.
+///
+/// Capture is not provider liveness. Production liveness cannot be replaced by
+/// a photo; backend-marked test liveness must be opted into explicitly.
 class LuliVerifyEvidencePicker {
   final ImagePicker _images = ImagePicker();
+
+  /// Selects or captures one permitted file, returning null on user cancellation.
+  ///
+  /// [contract] supplies upload enablement, MIME policy and byte limit. [camera]
+  /// selects capture rather than a document picker. Optional [capture] replaces
+  /// the system camera only when camera is true; it must return a newly created,
+  /// operation-owned temporary file or null. That file is deleted best-effort after
+  /// reading. User-selected document-provider files are never deleted.
+  ///
+  /// [testOnlyLiveness] is a development-only opt-in for a test liveness contract;
+  /// the session/controller must separately enforce its backend testOnly flag.
+  /// Size and file signatures are checked before returning an owned byte buffer.
+  /// Throws LuliVerifyException for disabled/unsupported files, permissions/capture
+  /// failures, or a provider-required liveness step. Choosing a file proves nothing
+  /// about document authenticity or human presence.
   Future<LuliVerifyPickedEvidence?> pick({
     required LuliVerifyInputContract contract,
     bool camera = false,
@@ -123,7 +156,10 @@ class LuliVerifyEvidencePicker {
     }
   }
 
-  /// Call once on Android startup. Recovered media must be re-confirmed against
-  /// the current backend step; never attach it automatically to another session.
+  /// Retrieves image_picker recovery data after Android activity loss.
+  ///
+  /// Advanced hosts may call once during startup. Reconfirm the customer, session,
+  /// step and role before using recovered media; never attach it automatically.
+  /// This does not restore SDK session credentials or accept the capture as passed.
   Future<LostDataResponse> retrieveLostCapture() => _images.retrieveLostData();
 }

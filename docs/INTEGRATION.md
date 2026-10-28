@@ -63,6 +63,14 @@ return URI. It never spoofs a browser Origin. The hosted widget exchanges the
 ticket and executes the existing web flow. Flutter's embedded browser is not
 used and no website owned by the merchant needs to host the widget.
 
+The checked-in example currently has no App Link intent filter or iOS Associated
+Domains entitlement. Its return-URL input does not configure either operating
+system. A backend-registered HTTPS URL alone will still open in the browser
+unless the app/domain association is installed and verified. The previous
+hosted-launch smoke test covered opening the website, not returning to the app.
+The SDK event-listener regression separately verifies exact-match return delivery,
+wrong-link rejection, route dismissal and the advisory hostedReturned result.
+
 Android: configure an autoVerify VIEW intent filter for your HTTPS host/path
 and serve `.well-known/assetlinks.json` with the real package/signing identity.
 iOS: add `applinks:your-app.example` to Associated Domains and serve the Apple

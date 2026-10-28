@@ -2,8 +2,28 @@ import '../../core/contracts/input_contract.dart';
 import '../../core/contracts/json_contract.dart';
 import '../../core/errors/luliverify_exception.dart';
 
-enum LuliVerifySessionStatus { active, completed, failed, cancelled, expired }
+/// Backend session lifecycle state, distinct from local controller phases.
+enum LuliVerifySessionStatus {
+  /// Workflow remains in progress.
+  active,
 
+  /// Backend session finished; this is not merchant authorization.
+  completed,
+
+  /// Backend session ended unsuccessfully.
+  failed,
+
+  /// Backend confirmed session cancellation.
+  cancelled,
+
+  /// Backend marked the session expired.
+  expired,
+}
+
+/// Deeply immutable, validated backend workflow/session snapshot.
+///
+/// Only current/available backend steps may be submitted. Public snapshots strip
+/// the sessionToken but may still contain personal data; do not log the raw map.
 final class LuliVerifySession {
   LuliVerifySession._(
     this.raw,
@@ -17,6 +37,10 @@ final class LuliVerifySession {
     this.availableStepIds,
   );
 
+  /// Parses session data, without its API envelope.
+  ///
+  /// Validates status, expiry, contracts, current/available-step consistency and
+  /// action flags. Throws LuliVerifyException for malformed or unsupported data.
   factory LuliVerifySession.fromJson(Object? json) {
     final decoded = jsonObject(json);
     final raw = jsonObject({...decoded}..remove('sessionToken'));
@@ -109,22 +133,47 @@ final class LuliVerifySession {
     );
   }
 
+  /// Parses a successful statusCode-200 API envelope containing session data.
+  ///
+  /// Throws LuliVerifyException for a non-success or malformed envelope.
   factory LuliVerifySession.fromResponse(Object? json) {
     final envelope = jsonObject(json);
     if (envelope['statusCode'] != 200) invalidContract();
     return LuliVerifySession.fromJson(envelope['data']);
   }
 
-  /// The session token is deliberately excluded from the public snapshot.
+  /// Complete immutable session data, excluding sessionToken.
+  ///
+  /// Evidence references, results or customer inputs may remain sensitive.
   final Map<String, Object?> raw;
+
+  /// Backend session identifier; this is not a bearer credential.
   final String id;
+
+  /// Backend revision required for the next optimistic-concurrency mutation.
   final int revision;
+
+  /// Validated backend lifecycle state.
   final LuliVerifySessionStatus status;
+
+  /// Backend session expiry normalized to UTC.
   final DateTime expiresAt;
+
+  /// Whether backend execution is test-only; independent of customer UI wording.
   final bool testOnly;
+
+  /// Unmodifiable contracts indexed by their backend step IDs.
   final Map<String, LuliVerifyInputContract> contracts;
+
+  /// Current step, or null for terminal snapshots.
   final String? currentStepId;
+
+  /// Unmodifiable backend-authorized step choices for this snapshot.
   final List<String> availableStepIds;
+
+  /// Whether the backend status is no longer active.
   bool get isTerminal => status != LuliVerifySessionStatus.active;
+
+  /// Backend action flag only; local busy/expiry checks still apply.
   bool get backendCanSubmit => jsonObject(raw['actions'])['canSubmit'] == true;
 }

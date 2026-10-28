@@ -3,7 +3,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'luli_components.dart';
 
+/// Internal attribution footer shared across SDK-owned states.
 class LuliPoweredBy extends StatelessWidget {
+  /// Creates the LuliVerify attribution footer.
   const LuliPoweredBy({super.key});
   @override
   Widget build(BuildContext context) => const Padding(
@@ -27,12 +29,16 @@ class LuliPoweredBy extends StatelessWidget {
   );
 }
 
+/// Internal preparation guidance tailored to tools present in the workflow.
 class LuliWelcomeIntro extends StatelessWidget {
+  /// Creates guidance that mentions documents/selfie lighting only when relevant.
   const LuliWelcomeIntro({
     super.key,
     this.documents = false,
     this.selfie = false,
   });
+
+  /// Whether this workflow contains document capture and selfie-related steps.
   final bool documents, selfie;
   @override
   Widget build(BuildContext context) => Padding(
@@ -62,6 +68,7 @@ class LuliWelcomeIntro extends StatelessWidget {
   );
 }
 
+/// Displays one preparation instruction with an outline icon.
 class _IntroRow extends StatelessWidget {
   const _IntroRow(this.icon, this.title, this.description);
   final IconData icon;
@@ -96,7 +103,9 @@ class _IntroRow extends StatelessWidget {
   );
 }
 
+/// Internal scroll-safe terminal screen; communicates submission rather than approval.
 class LuliTerminalView extends StatelessWidget {
+  /// Creates terminal copy and a host-controlled return action.
   const LuliTerminalView({
     super.key,
     required this.expired,
@@ -104,7 +113,11 @@ class LuliTerminalView extends StatelessWidget {
     required this.cancelled,
     required this.onClose,
   });
+
+  /// Backend/local lifecycle indicators selecting the terminal message.
   final bool expired, completed, cancelled;
+
+  /// Host action invoked by Return to app; does not itself authorize or resume.
   final VoidCallback onClose;
   @override
   Widget build(BuildContext context) => LayoutBuilder(

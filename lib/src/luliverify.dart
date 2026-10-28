@@ -15,33 +15,104 @@ import 'presentation/design/session_states.dart';
 import 'presentation/hosted/hosted_launch.dart';
 import 'presentation/native/session_screen.dart';
 
+/// Reason an SDK-owned verification route returned to its caller.
+///
+/// Native session statuses and hosted navigation statuses are distinct. None is
+/// merchant-authoritative approval; use trusted backend results for decisions.
 enum LuliVerifyResultStatus {
+  /// The native backend session completed; this is not an authorization decision.
   completed,
+
+  /// The native backend session ended with a failed status.
   failed,
+
+  /// Cancellation of the native backend session was confirmed.
   cancelled,
+
+  /// The native session expired according to the backend or local expiry clock.
   expired,
+
+  /// The local route closed without confirmed remote cancellation/completion.
+  ///
+  /// In hosted mode this does not cancel the browser session.
   dismissed,
+
+  /// A matching hosted return link arrived while the SDK route was alive.
+  ///
+  /// This reports navigation only and does not imply verification passed.
   hostedReturned,
+
+  /// The route closed after a sanitized SDK error; inspect the result errorCode.
   error,
 }
 
-/// Advisory session/navigation result. Never use this as account authorization.
+/// Advisory result returned when the SDK route closes.
+///
+/// A session may not have been created, so [sessionId], [testOnly] and
+/// [errorCode] can be null. Never use this object alone to grant account access.
 final class LuliVerifyResult {
+  /// Creates an immutable session/navigation result.
+  ///
+  /// Use [status] to distinguish confirmed native states from hosted return or
+  /// local dismissal. The constructor itself does not validate a backend outcome.
   const LuliVerifyResult({
     required this.status,
     this.sessionId,
     this.testOnly,
     this.errorCode,
   });
+
+  /// Reason the SDK returned control to the host application.
   final LuliVerifyResultStatus status;
+
+  /// Backend session identifier, or null if no session was obtained.
+  ///
+  /// An identifier is not a credential and cannot restore session access.
   final String? sessionId;
+
+  /// Backend test-mode flag, or null when launch metadata was unavailable.
+  ///
+  /// Customer-facing screens omit test notices; this flag is still retained.
   final bool? testOnly;
+
+  /// Sanitized SDK error category when available; excludes provider payloads.
   final String? errorCode;
 }
 
-/// Single-call launcher. Owns session, route, controllers and disposal.
+/// Primary entry point for native and hosted workflow verification.
+///
+/// Prefer [launch] over composing transports/controllers manually. The SDK owns
+/// its route and resources; only one launch may be open in this Dart isolate.
 abstract final class LuliVerify {
   static bool _launching = false;
+
+  /// Opens a published workflow and resolves when its SDK route closes.
+  ///
+  /// [context] must be mounted below a Navigator. The root Navigator receives an
+  /// SDK-owned route and theme; no host-authored SDK screen is required.
+  ///
+  /// [publishableKey] must be an issued creation-only key that permits [releaseId],
+  /// the published release ID (not a workflow/draft ID). Changes require publishing
+  /// and supplying the replacement release. [customerReference] is optional,
+  /// 1–150 characters when provided, and is correlation rather than authentication.
+  ///
+  /// [mode] defaults to native UI. Hosted mode opens the external browser and
+  /// requires [returnUrl]: an exact backend-registered HTTPS App/Universal Link.
+  /// The host must configure OS/domain associations. Native mode must omit it.
+  /// A matching link resolves as [LuliVerifyResultStatus.hostedReturned], not
+  /// completed. Cold-start restoration after process death is not implemented.
+  ///
+  /// [apiBaseUrl] defaults to https://luli-api.luliverify.io. [widgetOrigin] defaults
+  /// to https://verify.luliverify.io and validates hosted launch origin.
+  /// [httpClientFactory] is an advanced/testing hook: return a new client each time;
+  /// the SDK owns and closes every supplied client. Never add private credentials,
+  /// browser Origin headers, cookies or automatic mutation retries.
+  ///
+  /// Throws [StateError] for a concurrent launch and [ArgumentError] for invalid
+  /// API configuration. A missing Navigator also throws before a flow opens.
+  /// Failures inside the opened route are presented there and normally become a
+  /// sanitized error result on close. Await the result and check context.mounted
+  /// before updating host UI. Callbacks never authorize a customer.
   static Future<LuliVerifyResult> launch(
     BuildContext context, {
     required String publishableKey,
@@ -102,6 +173,7 @@ abstract final class LuliVerify {
   }
 }
 
+/// Owns the routed native/hosted launch boundary and its public configuration.
 class _LaunchScreen extends StatefulWidget {
   const _LaunchScreen({
     required this.config,
@@ -122,6 +194,7 @@ class _LaunchScreen extends StatefulWidget {
   State<_LaunchScreen> createState() => _LaunchState();
 }
 
+/// Maintains memory-only launch/session resources until the SDK route closes.
 class _LaunchState extends State<_LaunchScreen> {
   http.Client? _pendingClient;
   LuliVerifyNativeSessionTransport? _transport;
@@ -137,6 +210,9 @@ class _LaunchState extends State<_LaunchScreen> {
     _start();
   }
 
+  /// Creates one launch, then exchanges native access or installs hosted link listening.
+  ///
+  /// No automatic retry is safe after an ambiguous one-use ticket exchange.
   Future<void> _start() async {
     try {
       _pendingClient = widget.httpClientFactory?.call() ?? http.Client();
@@ -207,6 +283,7 @@ class _LaunchState extends State<_LaunchScreen> {
     }
   }
 
+  /// Closes the SDK route with advisory, sanitized session/navigation metadata.
   void _finish(LuliVerifyResultStatus status) {
     Navigator.of(context).pop(
       LuliVerifyResult(
@@ -218,6 +295,9 @@ class _LaunchState extends State<_LaunchScreen> {
     );
   }
 
+  /// Confirms leaving and attempts native cancellation only when mutation is safe.
+  ///
+  /// Hosted dismissal does not claim to cancel the remote browser session.
   Future<void> _close() async {
     if (_closing) return;
     if (_errorCode != null && _controller == null) {

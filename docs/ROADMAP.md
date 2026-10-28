@@ -1,6 +1,6 @@
 # Delivery Status
 
-Implemented locally:
+Implemented in this repository:
 - Native backend launch/exchange channel, resume and browser/native separation.
 - Typed backend parsers and revision-safe session orchestration.
 - Native HTTP and multipart transport, expiry/cancellation/recovery primitives.
@@ -10,7 +10,7 @@ Implemented locally:
 - Custom branded mobile controls with bundled Geist and Lucide outline icons.
 
 Before production release:
-- Deploy the accompanying backend changes and exercise merchant authorization.
+- Confirm the target backend supports the documented contracts and exercise merchant authorization.
 - Integrate provider-supported native liveness and actual OTP delivery.
 - Test physical-device capture, denied permissions, interruption and recovery.
 - Configure and test each merchant app's OS-verified app/universal links.

@@ -1,7 +1,9 @@
 # Mobile Contract Status
 
-Inspected baseline: backend `4b1ec0a`. Native channel additions are local backend
-changes accompanying this SDK milestone; they require deployment before use.
+Documented backend implementation: `d71b668` (including the native/mobile
+launch work from `ef7916c`). The original contract review began at `4b1ec0a`.
+Verify the target environment supports these endpoints; this source review is
+not a claim that every deployment has been updated.
 
 ## Implemented Backend Contract
 

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:luliverify_flutter/luliverify_flutter.dart';
 
+/// Starts the development host; configuration fields contain public values only.
 void main() => runApp(const ExampleApp());
 
+/// Example host application for the SDK-owned verification route.
+///
+/// The host provides a Navigator and a button, not its own verification screens.
 class ExampleApp extends StatelessWidget {
+  /// Creates the example application with the SDK demo theme.
   const ExampleApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -16,11 +21,13 @@ class ExampleApp extends StatelessWidget {
 
 /// Merchant example: the SDK owns the route and session after launch().
 class LaunchPage extends StatefulWidget {
+  /// Creates public configuration fields and native/hosted launch controls.
   const LaunchPage({super.key});
   @override
   State<LaunchPage> createState() => _LaunchPageState();
 }
 
+/// Owns example configuration fields and displays advisory launch results.
 class _LaunchPageState extends State<LaunchPage> {
   final _key = TextEditingController(
     text: const String.fromEnvironment('PUBLISHABLE_KEY'),
@@ -120,6 +127,10 @@ class _LaunchPageState extends State<LaunchPage> {
       ),
     ),
   );
+
+  /// Launches the selected mode and updates UI only while the host is mounted.
+  ///
+  /// The returned status is advisory and must not grant sensitive app access.
   Future<void> _launch() async {
     setState(() {
       _busy = true;

@@ -7,24 +7,51 @@ import '../../core/errors/luliverify_exception.dart';
 import '../../core/network/session_transport.dart';
 import 'workflow_session.dart';
 
+/// Local orchestration phase, distinct from the backend session status.
 enum LuliVerifySessionPhase {
+  /// No session read has started.
   idle,
+
+  /// A session read is in progress.
   loading,
+
+  /// A snapshot is available; backend action flags still govern submission.
   ready,
+
+  /// A step mutation or cancellation is in progress.
   submitting,
+
+  /// An operation could not be confirmed; inspect the sanitized error.
   failed,
+
+  /// The active session has reached its expiry boundary.
   expired,
+
+  /// A completed, failed, cancelled or expired backend state was adopted.
   terminal,
+
+  /// Local controller resources have been released.
   disposed,
 }
 
-/// Owns one transport/session lifecycle. Notifications are advisory, never approval.
+/// Observable, revision-safe owner of one session transport.
+///
+/// Subscribe with ChangeNotifier listeners or a ListenableBuilder. Operations are
+/// serialized, stale snapshots are rejected, and disposing closes the transport.
+/// Notifications and terminal states are advisory, never approval.
 final class LuliVerifySessionController extends ChangeNotifier {
+  /// Creates a controller bound to [sessionId] and an owned transport.
+  ///
+  /// The transport must address that same session. The optional clock supplies
+  /// local expiry time for deterministic tests; production defaults to DateTime.now.
+  /// Call [refresh] before submission and [dispose] when the flow ends.
   LuliVerifySessionController({
     required this.sessionId,
     required this._transport,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now;
+
+  /// Session identifier every adopted transport response must match.
   final String sessionId;
   final LuliVerifySessionTransport _transport;
   final DateTime Function() _clock;
@@ -54,23 +81,50 @@ final class LuliVerifySessionController extends ChangeNotifier {
     }
   }
 
+  /// Latest accepted immutable snapshot, or null before load/after access ends.
   LuliVerifySession? get session => _session;
+
+  /// Sanitized last operation failure; provider payloads are not propagated.
   LuliVerifyException? get error => _error;
+
+  /// Whether access failure requires new authorized session credentials.
+  ///
+  /// Refresh alone cannot repair unauthorized, forbidden, or expired-grant access.
   bool get requiresNewLaunch =>
       ['unauthorized', 'forbidden', 'grant_expired'].contains(_error?.code);
+
+  /// Current local phase, including expiry computed from the injected clock.
   LuliVerifySessionPhase get phase =>
       !_disposed &&
           _session?.isTerminal == false &&
           !_session!.expiresAt.isAfter(_clock())
       ? LuliVerifySessionPhase.expired
       : _phase;
+
+  /// True only when ready, not busy and explicitly allowed by backend action flags.
   bool get canSubmit =>
       phase == LuliVerifySessionPhase.ready &&
       !_busy &&
       _session?.backendCanSubmit == true;
 
+  /// Fetches and adopts the latest snapshot without advancing a step.
+  ///
+  /// Guard failures throw LuliVerifyException. Transport/contract failures are
+  /// stored in [error] with [phase] failed; the Future may complete normally.
+  /// Inspect controller state before continuing and do not overlap operations.
   Future<void> refresh() => _run(() => _transport.read(), false);
 
+  /// Submits answers for an available step at the current backend revision.
+  ///
+  /// [stepId] must be currently available. [idempotencyKey] is an 8–100 character
+  /// letters/digits/underscore/hyphen request identifier; do not blindly replay an
+  /// uncertain mutation. [input] uses backend keys/values, not display labels.
+  /// [consentAccepted] must be true when the contract requires consent.
+  ///
+  /// [simulateLiveness] is permitted only for backend-marked test liveness and
+  /// preserves workflow-authored outcomes; it cannot enable production liveness.
+  /// Validation/overlap guards throw LuliVerifyException. I/O failures are captured
+  /// in [error]; inspect [phase] after awaiting and refresh before retrying.
   Future<void> submit({
     required String stepId,
     required String idempotencyKey,
@@ -138,6 +192,10 @@ final class LuliVerifySessionController extends ChangeNotifier {
     await _run(() => _transport.submit(body), true);
   }
 
+  /// Requests remote cancellation when a non-terminal session is ready.
+  ///
+  /// Throws LuliVerifyException if disposed, busy, not ready or terminal. Network
+  /// failures are stored in [error]; only a cancelled snapshot confirms cancellation.
   Future<void> cancel() async {
     if (_disposed ||
         _busy ||
@@ -152,6 +210,7 @@ final class LuliVerifySessionController extends ChangeNotifier {
     await _run(() => _transport.cancel(), true);
   }
 
+  /// Serializes I/O, sanitizes failures and adopts only forward-compatible revisions.
   Future<void> _run(
     Future<LuliVerifySession> Function() operation,
     bool mutation,
@@ -232,6 +291,10 @@ final class LuliVerifySessionController extends ChangeNotifier {
   }
 
   @override
+  /// Closes the owned transport, cancels expiry notifications and clears snapshots.
+  ///
+  /// Idempotent locally; late responses are ignored. Does not request remote
+  /// cancellation. Explicitly call [cancel] first if remote cancellation is needed.
   void dispose() {
     if (_disposed) return;
     _disposed = true;

@@ -4,8 +4,17 @@ import '../../core/contracts/input_contract.dart';
 import '../../core/contracts/json_contract.dart';
 import '../design/luli_components.dart';
 
-/// Scalar fields only. Evidence and consent are supplied by the session screen.
+/// Backend-driven scalar input form for advanced native presenters.
+///
+/// Supports text, email, date, finite numbers and selects. Evidence and consent
+/// are managed by the surrounding session screen. Defaults/options/labels come
+/// from the contract; the backend remains the final validation authority.
 class LuliVerifyContractForm extends StatefulWidget {
+  /// Creates a scalar form for [contract] and an awaited [onSubmit] handler.
+  ///
+  /// The handler must preserve backend field keys and surface session errors
+  /// without logging personal input. [enabled] disables interaction;
+  /// [continueLabel] supplies customer-facing action copy.
   const LuliVerifyContractForm({
     super.key,
     required this.contract,
@@ -13,20 +22,31 @@ class LuliVerifyContractForm extends StatefulWidget {
     this.enabled = true,
     this.continueLabel = 'Continue',
   });
+
+  /// Current immutable contract; changing it clears locally collected values.
   final LuliVerifyInputContract contract;
+
+  /// Receives validated scalar answers. Does not automatically attach evidence
+  /// or consent; session orchestration must add those contract-required values.
   final Future<void> Function(Map<String, Object?>) onSubmit;
+
+  /// Whether interaction/submission is permitted by the surrounding session flow.
   final bool enabled;
+
+  /// Button copy, normally supplied by backend branding.
   final String continueLabel;
   @override
   State<LuliVerifyContractForm> createState() => _ContractFormState();
 }
 
+/// Owns transient scalar answers and client-side validation for one contract.
 class _ContractFormState extends State<LuliVerifyContractForm> {
   final _form = GlobalKey<FormState>();
   final Map<String, Object?> _values = {};
   bool _busy = false;
   String? _error;
 
+  /// Checks a scalar against supported backend metadata; returns local error copy.
   String? _validate(LuliVerifyInputField field, String? text) {
     final value = text ?? '';
     if (value.isEmpty) {

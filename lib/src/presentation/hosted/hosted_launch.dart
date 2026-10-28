@@ -2,8 +2,19 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/errors/luliverify_exception.dart';
 
-/// Opens a server-minted widget launch. Return navigation is not approval.
+/// Single-use external-browser launcher for a backend-minted hosted session.
+///
+/// This low-level adapter neither creates sessions nor registers/listens for OS
+/// app links. Prefer LuliVerify.launch for the managed browser/listener flow.
+/// Returning to the app is navigation and never proof of verification approval.
 final class LuliVerifyHostedLaunch {
+  /// Validates a hosted [launchUrl] against the expected [widgetOrigin].
+  ///
+  /// The URL must contain exactly one sessionId and one opaque ticket in its
+  /// fragment. All supplied URLs must be HTTPS without credentials;
+  /// [registeredReturnUrl] must have no fragment. Invalid values throw
+  /// [ArgumentError]. Backend allowlisting and app/domain association are still
+  /// required; construction does not install them. Never log the launch URL.
   LuliVerifyHostedLaunch({
     required Uri launchUrl,
     required Uri widgetOrigin,
@@ -34,11 +45,20 @@ final class LuliVerifyHostedLaunch {
     }
   }
   Uri? _launchUrl;
+
+  /// Complete registered return URI; incoming links must match its exact string.
   final Uri registeredReturnUrl;
+
+  /// Session identifier parsed from the backend-minted launch URL.
   late final String sessionId;
   bool _opened = false;
   bool _returned = false;
 
+  /// Opens the launch URL once using the device’s external browser.
+  ///
+  /// The URL is consumed before opening. Throws LuliVerifyException when it was
+  /// already used or browser launch fails; request fresh authorization rather
+  /// than replaying the original URL. Does not wait for workflow completion.
   Future<void> open() async {
     final url = _launchUrl;
     if (url == null) {
@@ -64,8 +84,11 @@ final class LuliVerifyHostedLaunch {
     _opened = true;
   }
 
-  /// Host app forwards OS-verified universal/app links here. Exact matching is
-  /// intentional: register a distinct server-bound return URL per launch.
+  /// Accepts one exact return URI only after a successful browser open.
+  ///
+  /// [incoming] should come from OS-verified App/Universal Link delivery. Returns
+  /// false for early, foreign, mismatched or repeated links. Does not fetch session
+  /// results, restore tokens, validate identity, or authorize the customer.
   bool handleReturn(Uri incoming) {
     if (!_opened ||
         _returned ||

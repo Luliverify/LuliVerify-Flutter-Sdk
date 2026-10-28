@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-/// Brand defaults, scoped to the SDK route. Host themes remain untouched.
+/// SDK theme tokens/factories scoped to verification routes.
+///
+/// Geist and custom controls provide the default appearance. Host application
+/// themes remain unchanged when using the managed launcher.
 abstract final class LuliVerifyDesign {
+  /// Default LuliVerify accent colour used when backend branding is absent/unsafe.
   static const primary = Color(0xff1f3fe2);
+
+  /// Primary text/icon colour on light SDK surfaces.
   static const ink = Color(0xff202431);
+
+  /// Secondary text colour with legible contrast on SDK light surfaces.
   static const muted = Color(0xff5d6375);
+
+  /// Subtle background colour for notices and disabled controls.
   static const surface = Color(0xfff2f4fd);
+
+  /// Default outline colour for SDK fields and secondary controls.
   static const border = Color(0xffd9dce7);
+
+  /// Builds a scoped theme from optional backend branding.
+  ///
+  /// Supports a valid six-digit primaryColor with adequate white-label contrast
+  /// and buttonRadius from 0 to 32. Unsupported/unsafe values use SDK defaults.
   static ThemeData fromBranding(Map<String, Object?>? branding) {
     final color = branding?['primaryColor'];
     var accent = primary;
@@ -27,6 +44,10 @@ abstract final class LuliVerifyDesign {
     );
   }
 
+  /// Builds the SDK’s light theme with [accent] and [buttonRadius].
+  ///
+  /// Advanced hosts may use this around low-level widgets. This factory does not
+  /// validate arbitrary accents; use [fromBranding] for untrusted branding data.
   static ThemeData theme({Color accent = primary, double buttonRadius = 12}) {
     final base = ThemeData(
       useMaterial3: false,
@@ -99,6 +120,7 @@ abstract final class LuliVerifyDesign {
   }
 }
 
+/// Theme extension carrying the SDK button radius through nested controls.
 class _LuliShape extends ThemeExtension<_LuliShape> {
   const _LuliShape(this.radius);
   final double radius;
@@ -109,7 +131,9 @@ class _LuliShape extends ThemeExtension<_LuliShape> {
       other == null ? this : _LuliShape(radius + (other.radius - radius) * t);
 }
 
+/// Internal branded action control with disabled and busy states.
 class LuliButton extends StatelessWidget {
+  /// Creates an action control; null [onPressed] or [busy] disables interaction.
   const LuliButton({
     super.key,
     required this.label,
@@ -118,9 +142,17 @@ class LuliButton extends StatelessWidget {
     this.secondary = false,
     this.busy = false,
   });
+
+  /// Customer-facing action copy.
   final String label;
+
+  /// Action callback, or null when interaction is disabled.
   final VoidCallback? onPressed;
+
+  /// Optional leading outline icon, hidden while busy.
   final IconData? icon;
+
+  /// Whether to use the outlined secondary style and show in-progress state.
   final bool secondary, busy;
   @override
   Widget build(BuildContext context) {
@@ -201,9 +233,15 @@ class LuliButton extends StatelessWidget {
   }
 }
 
+/// Internal accessible notice with information/error styling.
 class LuliNotice extends StatelessWidget {
+  /// Creates a live-region notice for safe customer-facing [message] copy.
   const LuliNotice(this.message, {super.key, this.error = false});
+
+  /// Notice text; must not contain credentials or sensitive provider payloads.
   final String message;
+
+  /// Whether to use the theme’s error treatment instead of information styling.
   final bool error;
   @override
   Widget build(BuildContext context) => Semantics(
@@ -238,8 +276,15 @@ class LuliNotice extends StatelessWidget {
   );
 }
 
-/// Accessible, branded selection sheet; values/options are supplied by backend.
+/// Accessible branded selection field using backend values and labels.
+///
+/// Keys are submitted values; labels are display-only. The selection sheet
+/// returns the original key and preserves the parent form’s save/validation hooks.
 class LuliSelect extends FormField<String> {
+  /// Creates a select field from a customer-facing label and value-to-label options.
+  ///
+  /// The initial value and allowed options must come from the current backend
+  /// contract. onChanged receives the selected wire value, not its label.
   LuliSelect({
     super.key,
     required String label,

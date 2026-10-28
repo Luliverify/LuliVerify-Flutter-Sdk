@@ -9,13 +9,18 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../design/luli_components.dart';
 import '../design/session_states.dart';
 
-/// Framing assistance only. This camera never asserts a liveness outcome.
+/// Internal front-camera capture/review route with a dotted framing guide.
+///
+/// Returns a newly captured XFile when accepted, or null on dismissal. No face
+/// detection or liveness outcome is produced. Not exported as the primary SDK API.
 class LuliSelfieCaptureScreen extends StatefulWidget {
+  /// Creates the camera route; permissions are requested when the camera initializes.
   const LuliSelfieCaptureScreen({super.key});
   @override
   State<LuliSelfieCaptureScreen> createState() => _SelfieCaptureState();
 }
 
+/// Owns camera lifecycle, temporary capture and in-memory review preview.
 class _SelfieCaptureState extends State<LuliSelfieCaptureScreen>
     with WidgetsBindingObserver {
   CameraController? _camera;
@@ -34,6 +39,7 @@ class _SelfieCaptureState extends State<LuliSelfieCaptureScreen>
     _open();
   }
 
+  /// Serializes front-camera initialization and discards stale lifecycle generations.
   void _open() {
     final generation = ++_generation;
     _pending = _pending.then((_) async {
@@ -100,6 +106,9 @@ class _SelfieCaptureState extends State<LuliSelfieCaptureScreen>
     }
   }
 
+  /// Captures a temporary file and reads its review bytes before releasing camera.
+  ///
+  /// The memory preview avoids file-load races when a customer rapidly retakes.
   Future<void> _capture() async {
     final camera = _camera;
     if (_busy || camera == null || !camera.value.isInitialized) return;
@@ -132,6 +141,7 @@ class _SelfieCaptureState extends State<LuliSelfieCaptureScreen>
     }
   }
 
+  /// Best-effort cleanup of an operation-owned temporary camera file.
   Future<void> _delete(XFile? photo) async {
     if (photo == null) return;
     try {
@@ -319,7 +329,9 @@ class _SelfieCaptureState extends State<LuliSelfieCaptureScreen>
   );
 }
 
+/// Paints a shaded exterior and dotted oval for camera framing only.
 class LuliFaceGuidePainter extends CustomPainter {
+  /// Creates the geometry-only guide painter; no image analysis is performed.
   const LuliFaceGuidePainter();
   @override
   void paint(Canvas canvas, Size size) {

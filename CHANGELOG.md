@@ -35,3 +35,5 @@
 - Use an inline close control on the selfie screen without a separate app bar.
 
 - Fix iOS document selection with server-derived uniform type identifiers; retain matching Android extension/MIME filters.
+
+- Expand installation, native/hosted setup, results, lifecycle and troubleshooting documentation; document public Dart APIs for IDE hovers and generated references.

@@ -15,8 +15,18 @@ import '../design/presentation_labels.dart';
 import '../design/session_states.dart';
 import '../design/luli_components.dart';
 
-/// The host owns/disposes controller and transport. Completion is advisory.
+/// Native presenter for an existing session controller and evidence transport.
+///
+/// Use LuliVerify.launch for the normal owned-route integration. In this advanced
+/// widget the host owns/disposes [controller], which in turn owns [transport].
+/// The screen checks session identity but does not dispose host-owned resources.
 class LuliVerifySessionScreen extends StatefulWidget {
+  /// Creates a native session view with matching [controller] and [transport].
+  ///
+  /// A mismatch throws ArgumentError when state is initialized/updated.
+  /// [onSessionEnded] reports terminal snapshots once per observed session ID and
+  /// is advisory; it does not close the route or confirm identity. [onClose] lets
+  /// the host handle dismissal/navigation.
   const LuliVerifySessionScreen({
     super.key,
     required this.controller,
@@ -24,14 +34,27 @@ class LuliVerifySessionScreen extends StatefulWidget {
     this.onSessionEnded,
     this.onClose,
   });
+
+  /// Host-owned observable controller; dispose it when its flow ends.
   final LuliVerifySessionController controller;
+
+  /// Evidence transport for the same session, normally owned by [controller].
   final LuliVerifyNativeSessionTransport transport;
+
+  /// Optional terminal notification scheduled after the frame.
+  ///
+  /// This is not merchant approval and does not automatically dismiss the view.
   final ValueChanged<LuliVerifySession>? onSessionEnded;
+
+  /// Optional host navigation callback for close/terminal actions.
+  ///
+  /// The managed launcher supplies its own cancellation/confirmation handling.
   final VoidCallback? onClose;
   @override
   State<LuliVerifySessionScreen> createState() => _SessionScreenState();
 }
 
+/// Coordinates display state, capture/upload feedback and revision refreshes.
 class _SessionScreenState extends State<LuliVerifySessionScreen>
     with WidgetsBindingObserver {
   final _picker = LuliVerifyEvidencePicker();
@@ -97,6 +120,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     }
   }
 
+  /// Schedules an advisory terminal notification without mutating during build.
   void _changed() {
     final session = widget.controller.session;
     if (session?.isTerminal == true && _notified != session!.id) {
@@ -699,6 +723,8 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     ),
   );
 
+  /// Validates role/type, captures evidence, uploads it, clears its owned buffer
+  /// and refreshes authoritative session state. UI progress does not imply acceptance.
   Future<void> _capture(bool camera) async {
     final controller = widget.controller;
     final session = controller.session;
@@ -779,6 +805,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     }
   }
 
+  /// Serializes a remove/recovery action and refreshes backend state before reuse.
   Future<void> _evidenceOperation(Future<void> Function() operation) async {
     setState(() {
       _uploading = true;
@@ -799,6 +826,7 @@ class _SessionScreenState extends State<LuliVerifySessionScreen>
     }
   }
 
+  /// Opens only credential-free HTTPS branding links and sanitizes launch failure.
   Future<void> _openLink(String value) async {
     try {
       final url = Uri.parse(value);
